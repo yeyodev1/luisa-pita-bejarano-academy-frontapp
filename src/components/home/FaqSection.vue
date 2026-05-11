@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { gsap } from '@/composables/useScrollReveal'
 
 const faq = [
@@ -29,8 +29,67 @@ const faq = [
   },
 ]
 
+const openIndex = ref<number | null>(null)
+const itemEls = ref<(HTMLElement | null)[]>([])
 const root = ref<HTMLElement | null>(null)
 let ctx: gsap.Context | null = null
+
+const setItemRef = (el: HTMLElement | null, i: number) => {
+  itemEls.value[i] = el
+}
+
+const toggle = (i: number) => {
+  if (openIndex.value === i) {
+    closeItem(i)
+    openIndex.value = null
+  } else {
+    if (openIndex.value !== null) closeItem(openIndex.value)
+    openIndex.value = i
+    nextTick(() => openItem(i))
+  }
+}
+
+const openItem = (i: number) => {
+  const item = itemEls.value[i]
+  if (!item) return
+  const answer = item.querySelector('.faq__answer') as HTMLElement
+  const inner = item.querySelector('.faq__answer-inner') as HTMLElement
+  const icon = item.querySelector('.faq__icon') as HTMLElement
+  if (!answer || !inner) return
+
+  const tl = gsap.timeline()
+  gsap.set(answer, { display: 'block' })
+  tl.fromTo(
+    answer,
+    { height: 0, overflow: 'hidden' },
+    { height: inner.scrollHeight, duration: 0.55, ease: 'power4.out', clearProps: 'overflow' },
+  )
+  tl.fromTo(inner, { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out' }, '-=0.15')
+  if (icon) {
+    tl.to(icon, { rotation: 135, duration: 0.45, ease: 'back.out(1.7)' }, 0)
+  }
+}
+
+const closeItem = (i: number) => {
+  const item = itemEls.value[i]
+  if (!item) return
+  const answer = item.querySelector('.faq__answer') as HTMLElement
+  const inner = item.querySelector('.faq__answer-inner') as HTMLElement
+  const icon = item.querySelector('.faq__icon') as HTMLElement
+  if (!answer || !inner) return
+
+  const tl = gsap.timeline()
+  tl.to(inner, { opacity: 0, y: -8, duration: 0.15, ease: 'power2.in' })
+  tl.to(
+    answer,
+    { height: 0, duration: 0.4, ease: 'power4.inOut', overflow: 'hidden' },
+    '-=0.05',
+  )
+  tl.call(() => gsap.set(answer, { display: 'none' }))
+  if (icon) {
+    tl.to(icon, { rotation: 0, duration: 0.35, ease: 'power3.out' }, 0)
+  }
+}
 
 onMounted(() => {
   if (!root.value) return
@@ -60,20 +119,31 @@ onBeforeUnmount(() => ctx?.revert())
       </header>
 
       <div class="faq__list">
-        <details v-for="(item, i) in faq" :key="i" class="faq__item">
-          <summary>
+        <div
+          v-for="(item, i) in faq"
+          :key="i"
+          class="faq__item"
+          :class="{ 'faq__item--open': openIndex === i }"
+          :ref="(el) => setItemRef(el as HTMLElement | null, i)"
+        >
+          <button
+            class="faq__trigger"
+            @click="toggle(i)"
+            :aria-expanded="openIndex === i"
+            :aria-controls="`faq-answer-${i}`"
+          >
             <span class="faq__num">{{ String(i + 1).padStart(2, '0') }}</span>
             <span class="faq__q">{{ item.q }}</span>
             <span class="faq__icon" aria-hidden="true">
               <i class="fa-solid fa-plus"></i>
             </span>
-          </summary>
-          <div class="faq__answer">
+          </button>
+          <div class="faq__answer" :id="`faq-answer-${i}`" role="region">
             <div class="faq__answer-inner">
               <p>{{ item.a }}</p>
             </div>
           </div>
-        </details>
+        </div>
       </div>
     </div>
   </section>
@@ -118,46 +188,40 @@ onBeforeUnmount(() => ctx?.revert())
 
 .faq__item {
   border-bottom: 1px solid rgba($lpb-black, 0.15);
-  padding-block: 0.2rem;
+}
 
-  &[open] {
-    .faq__icon {
-      transform: rotate(45deg);
-      background: $lpb-black;
-      color: $lpb-green;
-    }
-    .faq__answer {
-      grid-template-rows: 1fr;
-      padding-bottom: 2rem;
-    }
+.faq__trigger {
+  cursor: pointer;
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding-block: clamp(1.2rem, 2.5vw, 1.75rem);
+  min-height: 60px;
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &:focus-visible {
+    color: $lpb-green-dark;
+    outline: 2px solid $lpb-green-dark;
+    outline-offset: 4px;
+    border-radius: 4px;
   }
 
-  summary {
-    cursor: pointer;
-    list-style: none;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 0.85rem;
-    padding-block: clamp(1.2rem, 2.5vw, 1.75rem);
-    min-height: 60px;
-    outline: none;
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+    grid-template-columns: 1fr auto;
 
-    &::-webkit-details-marker {
+    .faq__num {
       display: none;
-    }
-
-    &:focus-visible {
-      color: $lpb-green-dark;
-    }
-
-    @media (max-width: 480px) {
-      gap: 0.75rem;
-      grid-template-columns: 1fr auto;
-
-      .faq__num {
-        display: none;
-      }
     }
   }
 }
@@ -185,6 +249,10 @@ onBeforeUnmount(() => ctx?.revert())
   color: $lpb-green-dark;
 }
 
+.faq__item--open .faq__q {
+  color: $lpb-green-dark;
+}
+
 .faq__icon {
   display: inline-flex;
   align-items: center;
@@ -194,7 +262,8 @@ onBeforeUnmount(() => ctx?.revert())
   border-radius: 50%;
   border: 1px solid rgba($lpb-black, 0.2);
   color: $lpb-black;
-  transition: transform .4s cubic-bezier(.2,.7,0,1), background .25s ease, color .25s ease;
+  background: transparent;
+  transition: background .25s ease, color .25s ease;
 
   &:hover {
     background: $lpb-black;
@@ -202,20 +271,23 @@ onBeforeUnmount(() => ctx?.revert())
   }
 }
 
+.faq__item--open .faq__icon {
+  background: $lpb-black;
+  color: $lpb-green;
+}
+
 .faq__answer {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.4s cubic-bezier(.2, .7, 0, 1), padding 0.4s ease;
+  display: none;
   overflow: hidden;
+}
+
+.faq__answer-inner {
   padding-left: calc(0.75rem + 2.2rem);
+  padding-bottom: 2rem;
 
   @media (max-width: 480px) {
     padding-left: 0;
   }
-}
-
-.faq__answer-inner {
-  min-height: 0;
 
   p {
     font-family: $font-sans;

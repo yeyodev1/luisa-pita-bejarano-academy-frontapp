@@ -35,7 +35,7 @@ onBeforeUnmount(() => ctx?.revert())
   <section class="community" id="comunidad" ref="root">
     <div class="community__inner">
       <header class="community__header">
-        <span class="eyebrow">Qué incluye el año</span>
+        <span class="eyebrow community__eyebrow">Qué incluye el año</span>
         <h2 class="community__title display-lg">
           Un sistema completo,<br />
           <span class="community__title--italic">no piezas sueltas.</span>
@@ -82,15 +82,15 @@ onBeforeUnmount(() => ctx?.revert())
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  position: sticky;
-  top: 6rem;
 
   @media (max-width: 960px) {
-    position: static;
     align-items: center;
     text-align: center;
-    margin-bottom: 3rem;
   }
+}
+
+.community__eyebrow {
+  color: $lpb-green-dark;
 }
 
 .community__title {
