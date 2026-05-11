@@ -65,9 +65,7 @@ onBeforeUnmount(() => ctx?.revert())
             <span class="faq__num">{{ String(i + 1).padStart(2, '0') }}</span>
             <span class="faq__q">{{ item.q }}</span>
             <span class="faq__icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M8 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
+              <i class="fa-solid fa-plus"></i>
             </span>
           </summary>
           <div class="faq__answer">
@@ -123,11 +121,8 @@ onBeforeUnmount(() => ctx?.revert())
   padding-block: 0.2rem;
 
   &[open] {
-    .faq__icon svg path:nth-child(2) {
-      opacity: 0;
-    }
     .faq__icon {
-      transform: rotate(180deg);
+      transform: rotate(45deg);
       background: $lpb-black;
       color: $lpb-green;
     }

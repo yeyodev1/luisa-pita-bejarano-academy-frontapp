@@ -98,9 +98,7 @@ onBeforeUnmount(() => {
         <AppButton :href="buildVipUrl('hero')" variant="primary" size="lg">Únete a la comunidad</AppButton>
         <a href="#filosofia" class="hero__quiet" data-lenis-prevent>
           <span>Conocer el método</span>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true" style="font-size: 0.75rem;"></i>
         </a>
       </div>
 
