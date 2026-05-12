@@ -62,6 +62,7 @@ onBeforeUnmount(() => ctx?.revert())
     </div>
 
     <div class="final-cta__glow" aria-hidden="true" />
+    <div class="final-cta__glow--gold" aria-hidden="true" />
   </section>
 </template>
 
@@ -159,6 +160,16 @@ onBeforeUnmount(() => ctx?.revert())
   height: 90%;
   background: radial-gradient(50% 50% at 50% 50%, rgba($lpb-green, 0.22) 0%, rgba($lpb-green, 0) 70%);
   filter: blur(60px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.final-cta__glow--gold {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 60%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba($lpb-gold, 0.12) 0%, rgba($lpb-gold, 0) 60%);
+  filter: blur(50px);
   z-index: 0;
   pointer-events: none;
 }

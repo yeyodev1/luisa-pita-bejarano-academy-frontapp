@@ -3,7 +3,6 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { gsap } from '@/composables/useScrollReveal'
 import nicole from '@/assets/testimonios/nicole.webp'
 import mariaisabel from '@/assets/testimonios/mariaisabel.webp'
-import mauro from '@/assets/testimonios/mauro.webp'
 
 const items = [
   {
@@ -19,10 +18,9 @@ const items = [
     photo: nicole,
   },
   {
-    quote: 'Lo que más valoro no son los kilos. Es haberme conocido en otro nivel. Luisa empuja sin presionar, y la comunidad pesa más que cualquier rutina.',
-    name: 'Mauro',
-    role: 'Comunidad anual · Cuenca',
-    photo: mauro,
+    quote: 'Llegué a los 42 pensando que ya era tarde para cambios reales. Un año después no solo transformé mi cuerpo — recuperé una energía que creía perdida. La comunidad te sostiene, la metodología te guía, y Luisa no te deja bajar los brazos.',
+    name: 'Andrea',
+    role: 'Arquitecta · Quito',
   },
 ]
 
@@ -63,7 +61,8 @@ onBeforeUnmount(() => ctx?.revert())
             <p>“{{ t.quote }}”</p>
           </blockquote>
           <div class="testimonials__author">
-            <img :src="t.photo" :alt="t.name" class="testimonials__photo" loading="lazy" />
+            <img v-if="t.photo" :src="t.photo" :alt="t.name" class="testimonials__photo" loading="lazy" />
+            <div v-else class="testimonials__avatar" aria-hidden="true">{{ t.name.charAt(0) }}</div>
             <div>
               <span class="testimonials__name">{{ t.name }}</span>
               <span class="testimonials__role">{{ t.role }}</span>
@@ -143,6 +142,7 @@ onBeforeUnmount(() => ctx?.revert())
 }
 
 .testimonials__card {
+  position: relative;
   flex: 0 0 auto;
   background: $lpb-ink;
   border: 1px solid rgba($lpb-white, 0.08);
@@ -162,9 +162,28 @@ onBeforeUnmount(() => ctx?.revert())
     transition: transform 0.4s cubic-bezier(0.2, 0.7, 0, 1), border-color 0.3s ease, box-shadow 0.4s ease;
 
     &:hover {
-      transform: translateY(-4px);
-      border-color: rgba($lpb-white, 0.2);
-      box-shadow: 0 20px 40px -24px rgba($lpb-black, 0.6);
+      transform: translateY(-6px);
+      border-color: rgba($lpb-green, 0.3);
+      box-shadow: 0 24px 48px -20px rgba($lpb-green, 0.25);
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $lpb-green, $lpb-gold, $lpb-green-dark);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 12px 12px 0 0;
+  }
+
+  @media (min-width: 880px) {
+    &:hover::after {
+      opacity: 1;
     }
   }
 }
@@ -173,7 +192,7 @@ onBeforeUnmount(() => ctx?.revert())
   font-family: $font-mono;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
-  color: $lpb-green;
+  color: $lpb-gold;
 }
 
 .testimonials__quote {
@@ -213,6 +232,21 @@ onBeforeUnmount(() => ctx?.revert())
   object-fit: cover;
   object-position: center;
   flex-shrink: 0;
+}
+
+.testimonials__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-size: 1.1rem;
+  font-weight: 500;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, $lpb-green, $lpb-gold);
+  color: $lpb-white;
 }
 
 .testimonials__name {

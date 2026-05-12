@@ -66,9 +66,9 @@ onBeforeUnmount(() => ctx?.revert())
           <span class="manifesto__mask"><span class="manifesto__line manifesto__line--italic">empoderadas.</span></span>
         </h2>
         <p class="manifesto__copy lede" data-fade>
-          Luisa Pita Bejarano es coach fitness y entrenadora personal especializada en mujeres
-          ocupadas, dueñas de negocio y madres en Ecuador y Latinoamérica. No es una dieta de 30 días.
-          Tampoco un reto de 8 semanas.
+          Luisa Pita Bejarano ha construido una metodología de acompañamiento anual para mujeres que
+          decidieron dejar de intentar programas cortos. Su enfoque no es la dieta: es el rediseño
+          completo de tu relación con el movimiento, la alimentación y tu propio cuerpo.
         </p>
         <p class="manifesto__copy lede" data-fade>
           Es la decisión de dedicarte un año entero — con una entrenadora que te empuja, una
@@ -100,6 +100,11 @@ onBeforeUnmount(() => ctx?.revert())
           <span class="manifesto__caption italic-accent">Coach · Ecuador</span>
         </figcaption>
       </figure>
+      <div class="manifesto__deco" aria-hidden="true">
+        <span class="manifesto__deco-dot manifesto__deco-dot--1" />
+        <span class="manifesto__deco-dot manifesto__deco-dot--2" />
+        <span class="manifesto__deco-dot manifesto__deco-dot--3" />
+      </div>
     </div>
   </section>
 </template>
@@ -111,6 +116,43 @@ onBeforeUnmount(() => ctx?.revert())
   background: $lpb-cream;
   color: $lpb-black;
   width: 100%;
+  overflow: clip;
+}
+
+.manifesto__deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.manifesto__deco-dot {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.manifesto__deco-dot--1 {
+  top: -8%;
+  right: 5%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba($lpb-green, 0.12) 0%, transparent 70%);
+}
+
+.manifesto__deco-dot--2 {
+  bottom: 5%;
+  left: -4%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba($lpb-gold, 0.1) 0%, transparent 70%);
+}
+
+.manifesto__deco-dot--3 {
+  top: 40%;
+  left: 55%;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba($lpb-green-dark, 0.08) 0%, transparent 70%);
 }
 
 .manifesto__inner {
@@ -156,6 +198,20 @@ onBeforeUnmount(() => ctx?.revert())
 .manifesto__line--italic {
   font-style: italic;
   color: $lpb-green-dark;
+  position: relative;
+  display: inline-block;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0.05em;
+    width: 100%;
+    height: 0.12em;
+    background: linear-gradient(90deg, $lpb-gold, $lpb-green-dark, $lpb-gold);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
 }
 
 .manifesto__copy {
@@ -198,7 +254,7 @@ onBeforeUnmount(() => ctx?.revert())
     font-size: clamp(2.2rem, 4.5vw, 3.2rem);
     font-weight: 500;
     line-height: 1;
-    color: $lpb-black;
+    color: $lpb-gold;
   }
 
   dd {

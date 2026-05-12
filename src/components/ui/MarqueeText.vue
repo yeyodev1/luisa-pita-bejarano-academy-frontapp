@@ -38,7 +38,7 @@ defineProps<{ items: string[]; speed?: number; theme?: 'light' | 'dark' | 'green
   }
 
   &--green {
-    background: $lpb-green;
+    background: linear-gradient(90deg, $lpb-green 0%, #1DB87A 40%, #C9A84C 100%);
     color: $lpb-black;
   }
 }
@@ -76,7 +76,8 @@ defineProps<{ items: string[]; speed?: number; theme?: 'light' | 'dark' | 'green
 }
 
 .marquee--green .marquee__bullet {
-  color: $lpb-black;
+  color: $lpb-gold;
+  text-shadow: 0 0 8px rgba($lpb-gold, 0.4);
 }
 
 @keyframes marquee-scroll {

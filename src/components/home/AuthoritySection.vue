@@ -61,16 +61,16 @@ onBeforeUnmount(() => ctx?.revert())
           <span class="italic-accent">Coach fitness y entrenadora personal</span> para mujeres con vidas que no caben en un plan de 8 semanas.
         </h2>
         <p class="authority__copy" data-rise>
-          <strong>Luisa Pita Bejarano</strong> es coach fitness y entrenadora personal especializada en
-          mujeres adultas empoderadas. Ha guiado a más de 200 mujeres en Ecuador, Latinoamérica, USA
-          y Europa en procesos de transformación corporal sostenidos — sin dietas restrictivas, sin
-          rutinas imposibles, sin efecto rebote.
+          <strong>Luisa Pita Bejarano</strong> es entrenadora personal y líder de comunidad con más
+          de una década transformando cuerpos de mujeres adultas en Ecuador, Latinoamérica, USA y
+          Europa. Su método se basa en consistencia, no en restricción — resultados reales que no
+          desaparecen cuando termina el programa.
         </p>
         <p class="authority__copy" data-rise>
-          Su comunidad anual cerrada es la evolución natural de su trabajo: dejar de empujar a sus
-          alumnas en bloques cortos para acompañarlas <em>un año completo</em>, con la profundidad
-          que ese tiempo permite. Mujeres ocupadas, dueñas de negocio, madres y profesionales que
-          buscan resultados duraderos sin sacrificar su vida real.
+          Su comunidad anual cerrada nació de una convicción: los cambios profundos no caben en ocho
+          semanas. Por eso acompaña a sus alumnas <em>un año completo</em>, con la profundidad que
+          ese tiempo permite. Profesionales, líderes de hogar y emprendedoras que encontraron en el
+          acompañamiento anual la respuesta que los retos exprés nunca les dieron.
         </p>
 
         <ul class="authority__pills" data-rise>
@@ -84,17 +84,51 @@ onBeforeUnmount(() => ctx?.revert())
           <span>{{ INSTAGRAM_HANDLE }}</span>
         </a>
       </div>
+      <div class="authority__deco" aria-hidden="true">
+        <span class="authority__deco-dot authority__deco-dot--1" />
+        <span class="authority__deco-dot authority__deco-dot--2" />
+      </div>
     </div>
   </section>
 </template>
 
 <style lang="scss" scoped>
 .authority {
+  position: relative;
   background: $lpb-cream;
   color: $lpb-black;
   padding-block: clamp(5rem, 12vw, 9rem);
   padding-inline: clamp(2.5rem, 9vw, 9rem);
   width: 100%;
+  overflow: clip;
+}
+
+.authority__deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.authority__deco-dot {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.authority__deco-dot--1 {
+  top: -10%;
+  left: -6%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba($lpb-gold, 0.1) 0%, transparent 70%);
+}
+
+.authority__deco-dot--2 {
+  bottom: -8%;
+  right: 10%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba($lpb-green, 0.1) 0%, transparent 70%);
 }
 
 .authority__inner {
@@ -125,6 +159,20 @@ onBeforeUnmount(() => ctx?.revert())
   overflow: hidden;
   border-radius: 4px;
   box-shadow: 0 30px 60px -20px rgba($lpb-black, 0.35);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba($lpb-green, 0.15);
+    border-radius: inherit;
+    pointer-events: none;
+    transition: border-color .4s ease;
+  }
+
+  &:hover::after {
+    border-color: rgba($lpb-gold, 0.3);
+  }
 
   img {
     width: 100%;
@@ -182,9 +230,17 @@ onBeforeUnmount(() => ctx?.revert())
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0.5rem 0.9rem;
-    border: 1px solid rgba($lpb-black, 0.2);
+    border: 1px solid rgba($lpb-green, 0.25);
     border-radius: 999px;
-    color: $lpb-graphite;
+    color: $lpb-green-dark;
+    background: rgba($lpb-green, 0.06);
+    transition: background .3s ease, border-color .3s ease, color .3s ease;
+
+    &:hover {
+      background: rgba($lpb-gold, 0.12);
+      border-color: rgba($lpb-gold, 0.4);
+      color: darken($lpb-gold, 12%);
+    }
   }
 }
 

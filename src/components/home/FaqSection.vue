@@ -187,7 +187,30 @@ onBeforeUnmount(() => ctx?.revert())
 }
 
 .faq__item {
+  position: relative;
   border-bottom: 1px solid rgba($lpb-black, 0.15);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, $lpb-green, $lpb-gold);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity .3s ease;
+  }
+
+  &:hover::before,
+  &--open::before {
+    opacity: 0.4;
+  }
+
+  @media (max-width: 768px) {
+    &::before { display: none; }
+  }
 }
 
 .faq__trigger {
@@ -230,7 +253,8 @@ onBeforeUnmount(() => ctx?.revert())
   font-family: $font-mono;
   font-size: 0.75rem;
   letter-spacing: 0.18em;
-  color: $lpb-graphite;
+  color: $lpb-gold;
+  font-weight: 600;
 }
 
 .faq__q {
@@ -246,11 +270,11 @@ onBeforeUnmount(() => ctx?.revert())
 }
 
 .faq__item:hover .faq__q {
-  color: $lpb-green-dark;
+  color: darken($lpb-gold, 8%);
 }
 
 .faq__item--open .faq__q {
-  color: $lpb-green-dark;
+  color: darken($lpb-gold, 5%);
 }
 
 .faq__icon {
@@ -260,20 +284,22 @@ onBeforeUnmount(() => ctx?.revert())
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba($lpb-black, 0.2);
-  color: $lpb-black;
-  background: transparent;
-  transition: background .25s ease, color .25s ease;
+  border: 1px solid rgba($lpb-green, 0.3);
+  color: $lpb-green-dark;
+  background: rgba($lpb-green, 0.08);
+  transition: background .25s ease, color .25s ease, border-color .3s ease, box-shadow .3s ease;
 
   &:hover {
-    background: $lpb-black;
-    color: $lpb-green;
+    background: $lpb-green-dark;
+    color: $lpb-white;
   }
 }
 
 .faq__item--open .faq__icon {
-  background: $lpb-black;
-  color: $lpb-green;
+  background: linear-gradient(135deg, $lpb-green-dark, $lpb-green);
+  color: $lpb-white;
+  border-color: $lpb-green;
+  box-shadow: 0 0 16px rgba($lpb-green, 0.2);
 }
 
 .faq__answer {

@@ -109,6 +109,7 @@ onBeforeUnmount(() => ctx?.revert())
               :alt="`Luisa Pita — ${item.label}`"
               loading="lazy"
             />
+            <span class="gallery__img-badge">{{ item.label }}</span>
           </div>
           <figcaption class="gallery__caption">
             <span class="gallery__num">{{ String(i + 1).padStart(2, '0') }}</span>
@@ -227,6 +228,16 @@ onBeforeUnmount(() => ctx?.revert())
     min-height: 400px;
   }
 
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba($lpb-green, 0.08), rgba($lpb-gold, 0.04));
+    opacity: 0;
+    transition: opacity .5s ease;
+    pointer-events: none;
+  }
+
   img {
     width: 100%;
     height: 100%;
@@ -241,12 +252,47 @@ onBeforeUnmount(() => ctx?.revert())
   transform: scale(1.06);
 }
 
+.gallery__item:hover .gallery__img::after {
+  opacity: 1;
+}
+
+.gallery__img-badge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: $lpb-white;
+  background: rgba($lpb-black, 0.6);
+  backdrop-filter: blur(6px);
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba($lpb-white, 0.12);
+  transition: background .3s ease, border-color .3s ease;
+}
+
+.gallery__item:hover .gallery__img-badge {
+  background: rgba($lpb-green-dark, 0.85);
+  border-color: rgba($lpb-green, 0.4);
+}
+
 .gallery__caption {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
+  padding: 0.75rem 0 0.5rem;
+  border-bottom: 2px solid rgba($lpb-green, 0.15);
+  transition: border-color .3s ease;
+}
+
+.gallery__item:hover .gallery__caption {
+  border-bottom-color: $lpb-green;
 }
 
 .gallery__num {
@@ -254,7 +300,7 @@ onBeforeUnmount(() => ctx?.revert())
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: $lpb-muted;
+  color: $lpb-gold;
 }
 
 .gallery__label {
@@ -262,5 +308,10 @@ onBeforeUnmount(() => ctx?.revert())
   font-style: italic;
   font-size: clamp(0.9rem, 1.4vw, 1.1rem);
   color: $lpb-black;
+  transition: color .3s ease;
+}
+
+.gallery__item:hover .gallery__label {
+  color: $lpb-green-dark;
 }
 </style>

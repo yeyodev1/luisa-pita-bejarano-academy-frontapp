@@ -3,9 +3,9 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { gsap } from '@/composables/useScrollReveal'
 
 const includes = [
-  { num: '01', title: 'Rutinas semanales para mujeres ocupadas', body: 'Entrenamientos diseñados por Luisa para casa o gimnasio. Para tu agenda real, no una imaginaria.' },
+  { num: '01', title: 'Rutinas semanales para mujeres ocupadas', body: 'Guías de entrenamiento progresivo que se adaptan a tu energía y agenda real. Cada semana construyes sobre la anterior, sin empezar de cero.' },
   { num: '02', title: 'Comunidad anual cerrada', body: 'Un círculo de mujeres que avanzan contigo. Sin curiosas, sin ruido. Solo decididas.' },
-  { num: '03', title: 'Plan nutricional flexible', body: 'Hábitos sostenibles, no dietas restrictivas. Adaptado para viajes, eventos y vida real.' },
+  { num: '03', title: 'Plan nutricional flexible', body: 'Un enfoque que se acopla a tu momento de vida. Viajas, celebras, cenas fuera — y sigues avanzando sin culpa ni rigidez.' },
   { num: '04', title: 'Sesiones grupales con Luisa', body: 'Espacios en vivo durante el año para resolver dudas, ajustar tu plan y mantenerte en ruta.' },
   { num: '05', title: 'Retos mensuales medibles', body: 'Pequeñas metas que se acumulan a lo largo de doce meses. Un cuerpo distinto al final del año.' },
   { num: '06', title: 'Acompañamiento cercano', body: 'Luisa y su equipo cerca todo el año. No estás sola — estás dentro de una estructura que te empuja.' },
@@ -99,7 +99,7 @@ onBeforeUnmount(() => ctx?.revert())
 }
 
 .community__eyebrow {
-  color: $lpb-green-dark;
+  color: $lpb-gold;
 }
 
 .community__title {
@@ -114,7 +114,7 @@ onBeforeUnmount(() => ctx?.revert())
 
 .community__title--italic {
   font-style: italic;
-  color: $lpb-green-dark;
+  color: $lpb-gold;
   display: block;
   margin-top: 0.15em;
 }
@@ -131,23 +131,54 @@ onBeforeUnmount(() => ctx?.revert())
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 1.5rem clamp(1rem, 3vw, 2.5rem);
-  padding: clamp(1.5rem, 3.5vw, 2.5rem) 0;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem) 0 clamp(1.5rem, 3.5vw, 2.5rem) 1rem;
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
     gap: 0.5rem;
     text-align: center;
     justify-items: center;
+    padding-left: 0;
+  }
+}
+
+.community__row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, $lpb-gold, $lpb-green, transparent);
+  border-radius: 2px;
+  opacity: 0.3;
+  transition: opacity .3s ease;
+}
+
+.community__row:hover::before {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .community__row::before {
+    display: none;
   }
 }
 
 .community__num {
   font-family: $font-mono;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: $lpb-green-dark;
+  color: $lpb-gold;
   padding-top: 0.45rem;
+  position: relative;
+  z-index: 1;
+  transition: color .3s ease;
+}
+
+.community__row:hover .community__num {
+  color: $lpb-green;
 }
 
 .community__text {

@@ -6,12 +6,12 @@ const pillars = [
   {
     n: '01',
     title: 'Entrenamiento',
-    body: 'Rutinas para mujeres ocupadas, diseñadas por Luisa. En casa o en gimnasio, sin perder horas. Para tu agenda real, no para una imaginaria.',
+    body: 'Programas de entrenamiento progresivo que evolucionan contigo. En casa o gimnasio, sin exigirte dos horas diarias. Resultados que se acumulan semana a semana.',
   },
   {
     n: '02',
     title: 'Nutrición flexible',
-    body: 'Hábitos sostenibles, no dietas restrictivas. Adaptada para que viajes, salgas a comer y sigas avanzando los doce meses.',
+    body: 'Aprenderás a comer con libertad inteligente. Nada de contar calorías obsesivamente ni eliminar grupos de comida. Resultados que se mantienen porque no dependen de la restricción.',
   },
   {
     n: '03',
@@ -63,7 +63,12 @@ onBeforeUnmount(() => ctx?.revert())
       </header>
 
       <div class="method__grid">
-        <article v-for="p in pillars" :key="p.n" class="method__card">
+        <article
+          v-for="(p, i) in pillars"
+          :key="p.n"
+          class="method__card"
+          :class="`method__card--${i + 1}`"
+        >
           <span class="method__num">{{ p.n }}</span>
           <h3 class="method__card-title">{{ p.title }}</h3>
           <p class="method__card-body">{{ p.body }}</p>
@@ -140,10 +145,45 @@ onBeforeUnmount(() => ctx?.revert())
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  transition: background .35s ease;
+  transition: background .35s ease, box-shadow .4s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse at 50% 0%, rgba($lpb-green, 0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity .4s ease;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity .4s ease;
+  }
+
+  &--1::after { background: $lpb-green; }
+  &--2::after { background: $lpb-gold; }
+  &--3::after { background: linear-gradient(90deg, $lpb-green-dark, $lpb-green); }
 
   &:hover {
     background: $lpb-ink;
+    box-shadow: 0 8px 32px rgba($lpb-green, 0.08);
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  &:hover::after {
+    opacity: 1;
   }
 }
 
@@ -151,11 +191,28 @@ onBeforeUnmount(() => ctx?.revert())
   font-family: $font-mono;
   font-size: 0.78rem;
   letter-spacing: 0.18em;
-  color: $lpb-green;
   align-self: flex-start;
-  padding: 0.25rem 0.6rem;
-  border: 1px solid rgba($lpb-green, 0.4);
+  padding: 0.3rem 0.7rem;
   border-radius: 999px;
+  position: relative;
+  z-index: 1;
+  transition: all .3s ease;
+  border: none;
+
+  .method__card--1 & {
+    background: rgba($lpb-green, 0.2);
+    color: $lpb-green;
+  }
+
+  .method__card--2 & {
+    background: rgba($lpb-gold, 0.2);
+    color: $lpb-gold;
+  }
+
+  .method__card--3 & {
+    background: rgba($lpb-green-dark, 0.2);
+    color: $lpb-green;
+  }
 }
 
 .method__card-title {

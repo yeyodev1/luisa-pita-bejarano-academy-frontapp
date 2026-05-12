@@ -108,6 +108,9 @@ onBeforeUnmount(() => {
         <span>Scroll</span>
         <span class="hero__scroll-line" />
       </div>
+
+      <div class="hero__accent-shape" aria-hidden="true" />
+      <div class="hero__accent-line" aria-hidden="true" />
     </div>
   </section>
 </template>
@@ -345,6 +348,28 @@ onBeforeUnmount(() => {
     background: $lpb-green;
     animation: scroll-cue 2.2s ease-in-out infinite;
   }
+}
+
+.hero__accent-shape {
+  position: absolute;
+  right: -6%;
+  bottom: -8%;
+  width: 40vmax;
+  height: 40vmax;
+  background: radial-gradient(circle at 30% 40%, rgba($lpb-gold, 0.15) 0%, rgba($lpb-green, 0.08) 40%, transparent 70%);
+  filter: blur(50px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero__accent-line {
+  position: absolute;
+  left: clamp(2.5rem, 9vw, 9rem);
+  bottom: 4rem;
+  width: clamp(3rem, 6vw, 6rem);
+  height: 2px;
+  background: linear-gradient(90deg, $lpb-green, $lpb-gold, transparent);
+  z-index: 1;
 }
 
 @keyframes scroll-cue {
