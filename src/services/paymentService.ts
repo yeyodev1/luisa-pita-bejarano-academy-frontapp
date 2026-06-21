@@ -26,15 +26,24 @@ export interface ConfirmPaymentResponse {
 
 class PaymentService extends APIBase {
   async prepareAnnual(payload: { email: string; name: string; lastName: string }) {
-    return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare', payload)
+    return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare', {
+      ...payload,
+      origin: window.location.origin,
+    })
   }
 
   async prepareMonthly(payload: { email: string; name: string; lastName: string }) {
-    return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare-monthly', payload)
+    return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare-monthly', {
+      ...payload,
+      origin: window.location.origin,
+    })
   }
 
   async prepareBox(payload: { email: string; name: string; lastName: string; plan: 'annual' | 'monthly' }) {
-    return this.post<ApiResponse<PaymentBoxConfig>>('payments/prepare-box', payload)
+    return this.post<ApiResponse<PaymentBoxConfig>>('payments/prepare-box', {
+      ...payload,
+      origin: window.location.origin,
+    })
   }
 
   async confirmPayment(id: string, clientTransactionId: string) {
