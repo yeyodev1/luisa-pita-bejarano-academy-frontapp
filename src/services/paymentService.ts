@@ -21,7 +21,10 @@ export interface PaymentBoxConfig {
 export interface ConfirmPaymentResponse {
   status: string
   transactionId?: number
-  message?: string
+  isNewUser?: boolean
+  plainPassword?: string
+  emailSent?: boolean
+  email?: string
 }
 
 class PaymentService extends APIBase {
@@ -50,6 +53,10 @@ class PaymentService extends APIBase {
     return this.get<ApiResponse<ConfirmPaymentResponse>>('payments/confirm', undefined, {
       params: { id, clientTransactionId },
     })
+  }
+
+  async resendWelcome(clientTransactionId: string) {
+    return this.post<ApiResponse<{ email: string }>>('payments/resend-welcome-public', { clientTransactionId })
   }
 
   async history() {
