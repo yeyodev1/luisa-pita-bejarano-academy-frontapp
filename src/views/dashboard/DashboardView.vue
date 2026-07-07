@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useDashboardStore } from '@/stores/dashboard'
 import LaunchBlocker from '@/components/dashboard/LaunchBlocker.vue'
 
-const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-06T00:00:00-05:00'
+const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-16T00:00:00-05:00'
 const isBeforeLaunch = computed(() => new Date().getTime() < new Date(launchDeadline).getTime())
 
 const dashboardStore = useDashboardStore()

@@ -28,7 +28,7 @@ const history = ref<PaymentItem[]>([])
 const monthlyPrice = Number(import.meta.env.VITE_MONTHLY_PRICE) || 47
 const annualPrice = Number(import.meta.env.VITE_ANNUAL_PRICE) || 297
 const whatsappNumber = (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '593992019807'
-const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-06T00:00:00-05:00'
+const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-16T00:00:00-05:00'
 
 const isMonthlyAvailable = computed(() => {
   return new Date().getTime() >= new Date(launchDeadline).getTime()

@@ -30,7 +30,7 @@ const revokeTarget = ref<AdminUser | null>(null)
 const founderTarget = ref<AdminUser | null>(null)
 const founderLoading = ref(false)
 
-const releaseDate = (import.meta.env.VITE_PRESALE_DEADLINE as string) || '2026-07-06T23:59:59-05:00'
+const releaseDate = (import.meta.env.VITE_PRESALE_DEADLINE as string) || '2026-07-16T23:59:59-05:00'
 
 const hasFilters = computed(() => filters.role !== '' || filters.subscriptionStatus !== '')
 
@@ -188,7 +188,7 @@ onMounted(loadUsers)
     <section class="admin-users__timer-banner">
       <div class="admin-users__timer-info">
         <span class="admin-users__timer-eyebrow">Lanzamiento de la comunidad</span>
-        <h2 class="admin-users__timer-title">Acceso se libera el 6 de julio</h2>
+        <h2 class="admin-users__timer-title">Acceso se libera el 16 de julio</h2>
         <p class="admin-users__timer-text">
           Los miembros fundadores obtendrán acceso prioritario y beneficios exclusivos.
         </p>

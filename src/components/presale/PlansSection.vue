@@ -8,7 +8,7 @@ import CheckoutModal from './CheckoutModal.vue'
 const annualPrice = Number(import.meta.env.VITE_ANNUAL_PRICE) || 297
 const monthlyPrice = Number(import.meta.env.VITE_MONTHLY_PRICE) || 45
 const whatsappNumber = (import.meta.env.VITE_WHATSAPP_NUMBER as string) || '593999999999'
-const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-06T00:00:00-05:00'
+const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-16T00:00:00-05:00'
 
 const isMonthlyAvailable = computed(() => {
   return new Date().getTime() >= new Date(launchDeadline).getTime()
@@ -105,7 +105,7 @@ function onBoxError(message: string) {
 
         <article class="plan-card" :class="{ 'plan-card--disabled': !isMonthlyAvailable }">
           <div v-if="!isMonthlyAvailable" class="plan-card__badge plan-card__badge--soon">
-            Desde el 6 de julio
+            Desde el 16 de julio
           </div>
           <h3 class="plan-card__name">Mensual</h3>
           <p class="plan-card__description">Flexibilidad mensual con renovación automática. Ideal para empezar.</p>
@@ -135,7 +135,7 @@ function onBoxError(message: string) {
             class="plan-card__button plan-card__button--outline"
             disabled
           >
-            No disponible hasta el 6 de julio
+            No disponible hasta el 16 de julio
           </button>
         </article>
       </div>
