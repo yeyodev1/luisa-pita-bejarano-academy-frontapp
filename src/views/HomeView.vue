@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import PresaleHero from '@/components/presale/PresaleHero.vue'
 import PlansSection from '@/components/presale/PlansSection.vue'
 import BenefitsSection from '@/components/presale/BenefitsSection.vue'
@@ -7,6 +8,15 @@ import VideoSection from '@/components/home/VideoSection.vue'
 import FaqSection from '@/components/home/FaqSection.vue'
 import FinalCtaSection from '@/components/home/FinalCtaSection.vue'
 import MarqueeText from '@/components/ui/MarqueeText.vue'
+
+onMounted(() => {
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'ViewContent', {
+      content_name: 'Academia Luisa Pita Bejarano',
+      content_type: 'product',
+    })
+  }
+})
 
 const marqueeItems = [
   'Un año contigo',

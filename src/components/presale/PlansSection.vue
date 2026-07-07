@@ -29,6 +29,16 @@ function openCheckout(plan: 'annual' | 'monthly') {
   error.value = ''
   boxConfig.value = null
   showModal.value = true
+
+  // Pixel: AddToCart al abrir el popup de pago
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'AddToCart', {
+      content_name: 'Academia Luisa Pita Bejarano',
+      content_type: 'product',
+      value: plan === 'annual' ? annualPrice : monthlyPrice,
+      currency: 'USD',
+    })
+  }
 }
 
 function closeCheckout() {
