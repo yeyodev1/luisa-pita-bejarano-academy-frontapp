@@ -7,7 +7,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 
 const { luisa } = useCloudinary()
 
-const deadline = import.meta.env.VITE_PRESALE_DEADLINE as string
+const deadline = (import.meta.env.VITE_PRESALE_DEADLINE as string) || '2026-07-16T23:59:59-05:00'
 const heroImage = luisa(11, { w: 1600, h: 2200, crop: 'fill', gravity: 'face' })
 const heroImageSm = luisa(11, { w: 720, h: 1100, crop: 'fill', gravity: 'face' })
 const heroImageMd = luisa(11, { w: 1100, h: 1500, crop: 'fill', gravity: 'face' })
