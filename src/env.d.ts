@@ -1,5 +1,9 @@
 /// <reference types="vite/client" />
 
+// Meta Pixel global
+declare function fbq(command: string, event: string, params?: Record<string, unknown>): void;
+declare function fbq(command: 'init', pixelId: string): void;
+
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<Record<string, never>, Record<string, never>, unknown>

@@ -38,8 +38,8 @@ async function setReminder() {
     const response = await launchReminderService.create()
     status.value = 'success'
     message.value = response.data.alreadyRegistered
-      ? 'Ya te habías registrado. Te avisamos el 6 de julio.'
-      : 'Listo. Te avisamos el 6 de julio para que no se te pase el lanzamiento.'
+      ? 'Ya te habías registrado. Te avisamos el 16 de julio.'
+      : 'Listo. Te avisamos el 16 de julio para que no se te pase el lanzamiento.'
   } catch (err: unknown) {
     status.value = 'error'
     const error = err as { message?: string }
@@ -60,7 +60,7 @@ async function setReminder() {
         Estamos preparando<br />algo increíble para ti
       </h1>
       <p class="launch-blocker__subtitle">
-        El contenido completo de la academia se abre el 6 de julio.
+        El contenido completo de la academia se abre el 16 de julio.
       </p>
 
       <CountdownTimer :target="deadline" label="Lanzamiento en" class="launch-blocker__timer" />

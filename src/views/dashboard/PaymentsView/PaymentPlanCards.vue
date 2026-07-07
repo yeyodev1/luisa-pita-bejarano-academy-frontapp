@@ -19,7 +19,7 @@ const emit = defineEmits<{
     <div class="plans__grid">
       <div class="plan" :class="{ 'plan--soon': !isMonthlyAvailable }">
         <div v-if="!isMonthlyAvailable" class="plan__badge plan__badge--soon">
-          Desde el 6 de julio
+          Desde el 16 de julio
         </div>
         <div v-else class="plan__badge plan__badge--simple">Flexible</div>
 
@@ -43,7 +43,7 @@ const emit = defineEmits<{
           {{ loading ? 'Preparando…' : 'Pagar mensualidad' }}
         </button>
         <button v-else class="plan__cta plan__cta--disabled" disabled>
-          No disponible hasta el 6 de julio
+          No disponible hasta el 16 de julio
         </button>
       </div>
 

@@ -23,7 +23,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
-const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-06T00:00:00-05:00'
+const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-16T00:00:00-05:00'
 const isBeforeLaunch = computed(() => new Date().getTime() < new Date(launchDeadline).getTime())
 
 const activeModal = ref<'logout' | null>(null)
@@ -217,7 +217,7 @@ function logout() {
         <i class="fa-solid fa-lock toast-item__icon" />
         <div class="toast-item__content">
           <span class="toast-item__title">Contenido bloqueado</span>
-          <span class="toast-item__text">Disponible a partir del 6 de julio</span>
+          <span class="toast-item__text">Disponible a partir del 16 de julio</span>
         </div>
         <button class="toast-item__close" type="button" aria-label="Cerrar" @click="dismissToast(t.id)">
           <i class="fa-solid fa-xmark" />
