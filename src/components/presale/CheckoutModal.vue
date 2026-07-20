@@ -2,10 +2,11 @@
 import { reactive, watch } from 'vue'
 import PayphoneBox from './PayphoneBox.vue'
 import type { PaymentBoxConfig } from '@/services/paymentService'
+import type { PaymentPlan } from '@/constants/paymentPlans'
 
 const props = defineProps<{
   open: boolean
-  plan: 'annual' | 'monthly'
+  plan: PaymentPlan
   price: number
   loading: boolean
   error?: string
@@ -212,9 +213,10 @@ function onBoxError(message: string) {
 }
 
 .checkout-modal__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
   gap: 1rem;
+
+  .checkout-modal__field { flex: 1 1 0; }
 }
 
 .checkout-modal__field {
@@ -362,7 +364,7 @@ function onBoxError(message: string) {
 
 @media (max-width: 720px) {
   .checkout-modal__grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
 </style>

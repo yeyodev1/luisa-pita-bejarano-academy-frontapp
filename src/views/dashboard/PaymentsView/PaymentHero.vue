@@ -7,7 +7,6 @@ defineProps<{
   isFoundingMember: boolean
   accessUntilLabel: string
   accessUntilDate: Date | null
-  annualPrice: number
 }>()
 
 const emit = defineEmits<{
@@ -36,8 +35,7 @@ const emit = defineEmits<{
     <div class="hero__main">
       <h2 class="hero__access">Elige tu plan</h2>
       <p class="hero__status">
-        Precio especial de preventa. <strong>Plan Anual — USD {{ annualPrice }}</strong> por 12 meses.
-        Valor regular: <strong>USD 470</strong>.
+        Elige entre 1, 3, 6 o 12 meses de acceso completo, desde <strong>USD 47</strong>.
       </p>
       <button class="hero__cta" @click="emit('go-to-payment-page')">
         Ver formas de pago

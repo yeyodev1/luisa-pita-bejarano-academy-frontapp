@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { paymentPlanLabel, type PaymentPlan } from '@/constants/paymentPlans'
+
 export interface PaymentItem {
   id: string
-  plan: 'monthly' | 'annual'
+  plan: PaymentPlan
   amount: number
   status: string
   createdAt: string
@@ -53,7 +55,7 @@ function formatDate(iso: string) {
           </tr>
           <tr v-for="item in items" :key="item.id">
             <td>{{ formatDate(item.createdAt) }}</td>
-            <td>{{ item.plan === 'annual' ? 'Anualidad' : 'Mensualidad' }}</td>
+            <td>{{ paymentPlanLabel(item.plan) }}</td>
             <td>USD {{ item.amount }}</td>
             <td>
               <span class="history__badge" :class="`history__badge--${item.status}`">

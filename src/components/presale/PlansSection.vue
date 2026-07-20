@@ -1,30 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
 import { paymentService } from '@/services/paymentService'
 import type { PaymentBoxConfig } from '@/services/paymentService'
+import { PAYMENT_PLANS, getPaymentPlan, type PaymentPlan } from '@/constants/paymentPlans'
 import CheckoutModal from './CheckoutModal.vue'
-
-const annualPrice = Number(import.meta.env.VITE_ANNUAL_PRICE) || 297
-const monthlyPrice = Number(import.meta.env.VITE_MONTHLY_PRICE) || 45
-const whatsappNumber = (import.meta.env.VITE_WHATSAPP_NUMBER as string) || '593999999999'
-const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-16T00:00:00-05:00'
-
-const isMonthlyAvailable = computed(() => {
-  return new Date().getTime() >= new Date(launchDeadline).getTime()
-})
 
 const loading = ref(false)
 const error = ref('')
 const showModal = ref(false)
-const selectedPlan = ref<'annual' | 'monthly'>('annual')
+const selectedPlan = ref<PaymentPlan>('annual')
 const boxConfig = ref<PaymentBoxConfig | null>(null)
+const selectedPlanDetails = computed(() => getPaymentPlan(selectedPlan.value))
 
-const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-  'Hola Luisa, quiero información sobre el plan mensual de la comunidad.',
-)}`
-
-function openCheckout(plan: 'annual' | 'monthly') {
+function openCheckout(plan: PaymentPlan) {
   selectedPlan.value = plan
   error.value = ''
   boxConfig.value = null
@@ -35,7 +23,7 @@ function openCheckout(plan: 'annual' | 'monthly') {
     fbq('track', 'AddToCart', {
       content_name: 'Academia Luisa Pita Bejarano',
       content_type: 'product',
-      value: plan === 'annual' ? annualPrice : monthlyPrice,
+      value: getPaymentPlan(plan).price,
       currency: 'USD',
     })
   }
@@ -74,68 +62,38 @@ function onBoxError(message: string) {
       <span class="eyebrow eyebrow--green">Elige tu compromiso</span>
       <h2 class="plans__title display-lg">Planes de la comunidad</h2>
       <p class="plans__lede">
-        Precio especial de preventa por tiempo limitado. Ambos planes incluyen acceso completo a la comunidad.
+        Todos los planes incluyen acceso completo a la academia. Elige el tiempo que mejor acompañe tu proceso.
       </p>
 
       <div class="plans__grid">
-        <article class="plan-card plan-card--featured">
-          <div class="plan-card__badge">Mejor valor</div>
-          <h3 class="plan-card__name">Anual</h3>
-          <p class="plan-card__description">Un año completo de acompañamiento. Paga una vez y asegura tu transformación.</p>
+        <article
+          v-for="plan in PAYMENT_PLANS"
+          :key="plan.id"
+          class="plan-card"
+          :class="{ 'plan-card--featured': plan.id === 'annual' }"
+        >
+          <div v-if="plan.id === 'annual'" class="plan-card__badge">Mayor compromiso</div>
+          <h3 class="plan-card__name">{{ plan.name }}</h3>
+          <p class="plan-card__description">{{ plan.description }}</p>
           <div class="plan-card__price">
             <span class="plan-card__currency">$</span>
-            <span class="plan-card__amount">{{ annualPrice }}</span>
-            <span class="plan-card__period">/año</span>
+            <span class="plan-card__amount">{{ plan.price }}</span>
+            <span class="plan-card__period">pago único</span>
           </div>
           <ul class="plan-card__features">
-            <li><i class="fa-solid fa-check" /> Acceso 12 meses</li>
+            <li><i class="fa-solid fa-check" /> Acceso por {{ plan.months }} {{ plan.months === 1 ? 'mes' : 'meses' }}</li>
             <li><i class="fa-solid fa-check" /> Entrenamientos personalizados</li>
             <li><i class="fa-solid fa-check" /> Plan nutricional flexible</li>
             <li><i class="fa-solid fa-check" /> Comunidad privada</li>
           </ul>
-          <button type="button" class="plan-card__button plan-card__button--primary" :disabled="loading" @click="openCheckout('annual')">
+          <button
+            type="button"
+            class="plan-card__button plan-card__button--primary"
+            :disabled="loading"
+            @click="openCheckout(plan.id)"
+          >
             <span v-if="loading">Preparando pago...</span>
             <span v-else>Pagar con tarjeta</span>
-          </button>
-          <RouterLink :to="{ name: 'home', hash: '#video' }" class="plan-card__link">
-            Saber más sobre el año
-          </RouterLink>
-          <p v-if="error" class="plan-card__error">{{ error }}</p>
-        </article>
-
-        <article class="plan-card" :class="{ 'plan-card--disabled': !isMonthlyAvailable }">
-          <div v-if="!isMonthlyAvailable" class="plan-card__badge plan-card__badge--soon">
-            Desde el 16 de julio
-          </div>
-          <h3 class="plan-card__name">Mensual</h3>
-          <p class="plan-card__description">Flexibilidad mensual con renovación automática. Ideal para empezar.</p>
-          <div class="plan-card__price">
-            <span class="plan-card__currency">$</span>
-            <span class="plan-card__amount">{{ monthlyPrice }}</span>
-            <span class="plan-card__period">/mes</span>
-          </div>
-          <ul class="plan-card__features">
-            <li><i class="fa-solid fa-check" /> Acceso mensual</li>
-            <li><i class="fa-solid fa-check" /> Entrenamientos personalizados</li>
-            <li><i class="fa-solid fa-check" /> Plan nutricional flexible</li>
-            <li><i class="fa-solid fa-check" /> Comunidad privada</li>
-          </ul>
-          <a
-            v-if="isMonthlyAvailable"
-            :href="whatsappUrl"
-            target="_blank"
-            rel="noopener"
-            class="plan-card__button plan-card__button--outline"
-          >
-            Escribir por WhatsApp
-          </a>
-          <button
-            v-else
-            type="button"
-            class="plan-card__button plan-card__button--outline"
-            disabled
-          >
-            No disponible hasta el 16 de julio
           </button>
         </article>
       </div>
@@ -144,7 +102,7 @@ function onBoxError(message: string) {
     <CheckoutModal
       :open="showModal"
       :plan="selectedPlan"
-      :price="selectedPlan === 'annual' ? annualPrice : monthlyPrice"
+      :price="selectedPlanDetails.price"
       :loading="loading"
       :error="error"
       :box-config="boxConfig"
@@ -182,10 +140,10 @@ function onBoxError(message: string) {
 }
 
 .plans__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .plan-card {
@@ -198,6 +156,7 @@ function onBoxError(message: string) {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  flex: 1 1 230px;
 }
 
 .plan-card--featured {
@@ -327,42 +286,10 @@ function onBoxError(message: string) {
     }
   }
 
-  &--outline {
-    background: transparent;
-    color: $lpb-black;
-    border-color: rgba($lpb-black, 0.15);
-
-    &:hover {
-      background: $lpb-black;
-      color: $lpb-white;
-    }
-  }
-
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
   }
 }
 
-.plan-card__link {
-  font-family: $font-sans;
-  font-size: 0.85rem;
-  color: $lpb-green-deep;
-  text-decoration: none;
-  text-align: center;
-  display: block;
-  margin-top: -0.25rem;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.plan-card__error {
-  font-family: $font-sans;
-  font-size: 0.85rem;
-  color: $alert-error;
-  margin: 0;
-  text-align: center;
-}
 </style>

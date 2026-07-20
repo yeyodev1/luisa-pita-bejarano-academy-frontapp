@@ -1,5 +1,6 @@
 import APIBase from './httpBase'
 import type { ApiResponse } from './authService'
+import type { PaymentPlan } from '@/constants/paymentPlans'
 
 export interface AdminUser {
   id: string
@@ -36,7 +37,7 @@ export interface ManualPayment {
     lastName: string
     email: string
   }
-  plan: 'monthly' | 'annual'
+  plan: PaymentPlan
   amount: number
   currency: 'USD'
   status: 'pending' | 'approved'
@@ -74,7 +75,7 @@ export interface ListPaymentsResponse {
 
 export interface CreatePaymentPayload {
   userId: string
-  plan: 'monthly' | 'annual'
+  plan: PaymentPlan
   amount: number
   notes: string
   receipt: File
