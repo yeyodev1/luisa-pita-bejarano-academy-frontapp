@@ -69,6 +69,7 @@ export const useDashboardStore = defineStore('dashboard', {
       })))
     },
     async fetchCourse(identifier: string) {
+      this.currentCourse = null
       const response = await this.run(() => contentService.getCourse(identifier))
       if (!response) return
       const course = response.data.data
@@ -79,6 +80,7 @@ export const useDashboardStore = defineStore('dashboard', {
       }
     },
     async fetchLesson(id: string) {
+      this.currentLesson = null
       const response = await this.run(() => contentService.getLesson(id))
       if (response) this.currentLesson = await hydrateLesson(response.data.data)
     },

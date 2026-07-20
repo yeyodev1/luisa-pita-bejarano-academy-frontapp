@@ -64,7 +64,7 @@ class ContentService extends APIBase {
     return this.delete<ApiResponse<{ deleted: boolean }>>(`${ROOT}/comments/${id}`)
   }
 
-  getAssetDelivery(asset: Pick<MediaAsset, 'publicId' | 'resourceType'>) {
+  getAssetDelivery(asset: Pick<MediaAsset, 'publicId' | 'resourceType' | 'provider'>) {
     return this.post<ApiResponse<MediaDelivery>>(`${ROOT}/assets/delivery-url`, asset)
   }
 }

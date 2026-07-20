@@ -1,3 +1,5 @@
+@use "@/styles/index.scss" as *;
+
 @mixin form {
   .editor-form { flex: 1; overflow-y: auto; }
   .form-section { padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--border); }

@@ -1,3 +1,5 @@
+@use "@/styles/index.scss" as *;
+
 @mixin button {
   .button {
     min-height: 42px;

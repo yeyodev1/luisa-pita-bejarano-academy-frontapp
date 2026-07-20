@@ -4,6 +4,15 @@ interface Window {
   cloudinary?: {
     createUploadWidget: (options: Record<string, unknown>, callback: (error: unknown, result: any) => void) => { open: () => void; close: () => void }
   }
+  playerjs?: {
+    Player: new (element: HTMLIFrameElement | string) => BunnyPlayer
+  }
+}
+
+interface BunnyPlayer {
+  on: (event: string, callback: (data?: any) => void) => void
+  off: (event?: string) => void
+  setCurrentTime: (seconds: number) => void
 }
 
 // Meta Pixel global

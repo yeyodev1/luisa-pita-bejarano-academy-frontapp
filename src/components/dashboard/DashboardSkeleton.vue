@@ -30,9 +30,9 @@
 @mixin shimmer {
   background: linear-gradient(
     90deg,
-    rgba($lpb-black, 0.04) 0%,
-    rgba($lpb-black, 0.08) 50%,
-    rgba($lpb-black, 0.04) 100%
+    rgba($lpb-green, 0.08) 0%,
+    rgba($lpb-green, 0.24) 50%,
+    rgba($lpb-green, 0.08) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
@@ -85,12 +85,13 @@
 }
 
 .skeleton__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
 .skeleton__stat {
+  flex: 1 1 220px;
   height: 110px;
   border-radius: 1rem;
   @include shimmer;
@@ -110,14 +111,15 @@
 }
 
 .skeleton__cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
 .skeleton__card {
+  flex: 1 1 280px;
   background: $lpb-white;
-  border: 1px solid var(--border);
+  border: 1px solid rgba($lpb-green-deep, .2);
   border-radius: 1rem;
   padding: 1rem;
   display: flex;
@@ -141,12 +143,11 @@
 }
 
 @media (max-width: 1200px) {
-  .skeleton__grid { grid-template-columns: repeat(2, 1fr); }
-  .skeleton__cards { grid-template-columns: repeat(2, 1fr); }
+  .skeleton__stat { flex-basis: 42%; }
+  .skeleton__card { flex-basis: 42%; }
 }
 
 @media (max-width: 720px) {
-  .skeleton__grid { grid-template-columns: 1fr; }
-  .skeleton__cards { grid-template-columns: 1fr; }
+  .skeleton__stat, .skeleton__card { flex-basis: 100%; }
 }
 </style>

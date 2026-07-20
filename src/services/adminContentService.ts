@@ -28,6 +28,14 @@ export interface UploadSignature {
   }
 }
 
+export interface BunnyUploadCredentials {
+  videoId: string
+  libraryId: string
+  expirationTime: number
+  signature: string
+  uploadUrl: string
+}
+
 const collectionKeys: Record<ContentKind, keyof ListResponse<unknown>> = {
   courses: 'courses',
   calendar: 'events',
@@ -104,9 +112,21 @@ class AdminContentService extends APIBase {
     return this.post<ApiResponse<{ asset: MediaAsset }>>('admin/assets/confirm', { publicId, resourceType })
   }
 
-  deleteMedia(publicId: string, resourceType: ResourceType) {
+  createVideoUpload(title: string) {
+    return this.post<ApiResponse<BunnyUploadCredentials>>('admin/videos', { title })
+  }
+
+  confirmVideoUpload(videoId: string, file: { bytes: number; duration: number; originalFilename: string }) {
+    return this.post<ApiResponse<{ asset: MediaAsset }>>(`admin/videos/${videoId}/confirm`, file)
+  }
+
+  getVideoStatus(videoId: string) {
+    return this.get<ApiResponse<{ status: number; encodeProgress: number }>>(`admin/videos/${videoId}`)
+  }
+
+  deleteMedia(publicId: string, resourceType: ResourceType, provider?: MediaAsset['provider']) {
     return this.delete<ApiResponse<{ publicId: string; result: string }>>('admin/assets', undefined, {
-      data: { publicId, resourceType },
+      data: { publicId, resourceType, provider },
     })
   }
 }

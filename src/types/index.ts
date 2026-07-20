@@ -22,6 +22,7 @@ export interface Pagination {
 export interface MediaAsset {
   publicId: string
   resourceType: ResourceType
+  provider?: 'cloudinary' | 'bunny'
   format?: string
   bytes?: number
   width?: number
@@ -166,7 +167,8 @@ export interface LessonComment {
 
 export interface MediaDelivery {
   publicId: string
-  cloudName: string
+  provider?: 'cloudinary' | 'bunny'
+  cloudName?: string
   url: string
 }
 

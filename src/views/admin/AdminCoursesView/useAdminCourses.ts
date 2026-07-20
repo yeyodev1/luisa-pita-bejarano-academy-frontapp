@@ -203,6 +203,7 @@ export function useAdminCourses() {
           .deleteMedia(
             originalCourseCover.value.publicId,
             originalCourseCover.value.resourceType,
+            originalCourseCover.value.provider,
           )
           .catch(() => undefined);
       }
@@ -237,7 +238,7 @@ export function useAdminCourses() {
         originalLessonAssets.value
           .filter((item) => !retained.has(item.publicId))
           .map((item) =>
-            adminContentService.deleteMedia(item.publicId, item.resourceType),
+            adminContentService.deleteMedia(item.publicId, item.resourceType, item.provider),
           ),
       );
       editor.value = null;
@@ -301,7 +302,7 @@ export function useAdminCourses() {
         (item) => item.publicId === asset.publicId,
       );
     if (!persisted)
-      await adminContentService.deleteMedia(asset.publicId, asset.resourceType);
+      await adminContentService.deleteMedia(asset.publicId, asset.resourceType, asset.provider);
   }
 
   function handleEscape(event: KeyboardEvent) {

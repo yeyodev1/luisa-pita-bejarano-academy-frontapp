@@ -89,7 +89,7 @@ async function save() {
     if (editing.value) await adminContentService.update(props.kind, idOf(editing.value), payload())
     else await adminContentService.create(props.kind, payload())
     if (previousAsset && previousAsset.publicId !== asset.value?.publicId) {
-      await adminContentService.deleteMedia(previousAsset.publicId, previousAsset.resourceType).catch(() => undefined)
+      await adminContentService.deleteMedia(previousAsset.publicId, previousAsset.resourceType, previousAsset.provider).catch(() => undefined)
     }
     reset()
     await load()
@@ -125,7 +125,7 @@ async function revoke(item: Record<string, unknown>) {
 async function deleteAsset() {
   if (!asset.value || !confirm('¿Eliminar este archivo de Cloudinary?')) return
   if (asset.value.publicId !== originalAsset.value?.publicId) {
-    await adminContentService.deleteMedia(asset.value.publicId, asset.value.resourceType)
+    await adminContentService.deleteMedia(asset.value.publicId, asset.value.resourceType, asset.value.provider)
   }
   asset.value = undefined
   assetRemoved.value = true
