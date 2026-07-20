@@ -1,0 +1,47 @@
+@use "@/styles/index.scss" as *;
+
+@mixin form {
+  .editor-form { flex: 1; overflow-y: auto; }
+  .form-section { padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--border); }
+  .form-section__heading { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 1.1rem; }
+  .form-section__heading > span {
+    width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 auto; border-radius: 50%; background: $lpb-black; color: $lpb-white;
+    font: 600 0.58rem $font-mono;
+  }
+  .form-section__heading h3 { font: 600 0.95rem $font-sans; margin: 0; }
+  .form-section__heading p { font: 0.72rem $font-sans; color: $lpb-muted; margin: 0.2rem 0 0; }
+  .form-fields { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .field { display: flex; flex: 1 1 calc(50% - 0.5rem); min-width: 240px; flex-direction: column; gap: 0.4rem; }
+  .field--wide { flex-basis: 100%; }
+  .field > span { font: 700 0.62rem $font-mono; text-transform: uppercase; color: $lpb-graphite; }
+  .field input, .field textarea, .field select {
+    width: 100%; border: 1px solid var(--border); border-radius: 0.7rem; padding: 0.78rem 0.85rem;
+    background: $lpb-white; color: $lpb-black; font: 0.86rem $font-sans;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none; border-color: $lpb-green-deep; box-shadow: 0 0 0 3px rgba($lpb-green, 0.18);
+  }
+  .field small { font: 0.66rem $font-sans; color: $lpb-muted; }
+  .input-suffix { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 0.7rem; background: $lpb-white; overflow: hidden; }
+  .input-suffix input { border: 0; box-shadow: none !important; }
+  .input-suffix span { padding-right: 0.8rem; font: 0.65rem $font-mono; color: $lpb-muted; }
+  .media-field { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px dashed var(--border); border-radius: 0.85rem; background: $lpb-white; }
+  .media-field--ready { border-style: solid; border-color: rgba($lpb-green-deep, 0.3); background: rgba($lpb-green, 0.05); }
+  .media-field__info { flex: 1 1 auto; display: flex; align-items: center; gap: 0.75rem; }
+  .media-field__info > i { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; border-radius: 0.6rem; background: $lpb-cream; color: $lpb-green-deep; }
+  .media-field__info span { display: flex; flex-direction: column; gap: 0.15rem; }
+  .media-field strong { font: 600 0.78rem $font-sans; }
+  .media-field small { font: 0.65rem $font-sans; color: $lpb-muted; }
+  .text-button { font: 700 0.62rem $font-mono; text-transform: uppercase; cursor: pointer; }
+  .danger { color: $alert-error !important; }
+  .editor-footer { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 0.6rem; padding: 1rem 1.75rem; background: $lpb-white; border-top: 1px solid var(--border); }
+  @media (max-width: 760px) {
+    .form-section, .editor-footer { padding-left: 1rem; padding-right: 1rem; }
+    .form-fields { flex-direction: column; }
+    .field { width: 100%; min-width: 0; }
+    .media-field { align-items: flex-start; flex-direction: column; }
+    .editor-footer .button { flex: 1; }
+  }
+}

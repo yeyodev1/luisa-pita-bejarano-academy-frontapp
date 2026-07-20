@@ -1,23 +1,26 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardPageHeader from './DashboardPageHeader.vue'
 import DashboardSkeleton from './DashboardSkeleton.vue'
 
 const router = useRouter()
+const route = useRoute()
 const isLoading = ref(false)
 const mobileMenuOpen = ref(false)
 
 let unsubscribe: (() => void) | null = null
+let loadingTimer: number | undefined
 
 onMounted(() => {
   const removeBefore = router.beforeEach(() => {
+    window.clearTimeout(loadingTimer)
     isLoading.value = true
   })
   const removeAfter = router.afterEach(() => {
-    isLoading.value = false
     mobileMenuOpen.value = false
+    loadingTimer = window.setTimeout(() => { isLoading.value = false }, 320)
   })
 
   unsubscribe = () => {
@@ -28,6 +31,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   unsubscribe?.()
+  window.clearTimeout(loadingTimer)
 })
 
 function toggleMobileMenu() {
@@ -56,8 +60,10 @@ function toggleMobileMenu() {
         <DashboardPageHeader :loading="isLoading" />
         <RouterView v-slot="{ Component }">
           <Transition name="fade" mode="out-in">
-            <DashboardSkeleton v-if="isLoading" />
-            <component :is="Component" v-else />
+            <div :key="route.fullPath" class="dashboard__view">
+              <DashboardSkeleton v-if="isLoading" />
+              <component :is="Component" v-else />
+            </div>
           </Transition>
         </RouterView>
       </div>
@@ -140,14 +146,21 @@ function toggleMobileMenu() {
   overflow-x: clip;
 }
 
+.dashboard__view {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.2, 0.7, 0, 1);
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+  transform: translateY(10px);
 }
 
 @media (max-width: 960px) {

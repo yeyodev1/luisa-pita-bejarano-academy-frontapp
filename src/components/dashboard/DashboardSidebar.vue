@@ -53,16 +53,15 @@ function dismissToast(id: number) {
 const menuItems = computed(() => {
   const items = [
     { name: 'dashboard', label: 'Inicio', icon: 'home' },
+    { name: 'calendar', label: 'Calendario', icon: 'calendar' },
     { name: 'courses', label: 'Mis cursos', icon: 'book-open' },
-    { name: 'live-classes', label: 'Clases en vivo', icon: 'video' },
-    { name: 'schedule', label: 'Horario', icon: 'calendar' },
     { name: 'recipes', label: 'Recetas', icon: 'utensils' },
     { name: 'achievements', label: 'Logros', icon: 'trophy' },
     { name: 'payments', label: 'Pagos', icon: 'credit-card' },
   ]
 
   if (userStore.role === 'admin') {
-    items.push({ name: 'admin-users', label: 'Panel admin', icon: 'user-shield' })
+    items.push({ name: 'admin-courses', label: 'Panel admin', icon: 'user-shield' })
   }
 
   return items

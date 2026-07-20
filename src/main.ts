@@ -15,8 +15,13 @@ app.use(pinia)
 const userStore = useUserStore()
 userStore.hydrate()
 
+window.addEventListener('auth:token-expired', () => {
+  userStore.clear()
+  if (router.currentRoute.value.meta.requiresAuth) router.replace({ name: 'login' })
+})
+
 app.use(router)
 
-router.isReady().then(() => {
+Promise.resolve(userStore.isAuthenticated ? userStore.validateSession() : true).then(() => router.isReady()).then(() => {
   app.mount('#app')
 })

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { authService } from '@/services/authService'
 
 export interface UserState {
   id: string | null
@@ -74,8 +75,9 @@ export const useUserStore = defineStore('user', {
       return (first + last).toUpperCase() || 'U'
     },
     hasActiveAccess: (state): boolean => {
-      if (!state.accessUntil) return false
-      return new Date(state.accessUntil).getTime() > new Date().getTime()
+      if (state.subscriptionStatus !== 'active') return false
+      if (!state.accessUntil) return true
+      return new Date(state.accessUntil).getTime() > Date.now()
     },
   },
 
@@ -98,6 +100,18 @@ export const useUserStore = defineStore('user', {
       this.subscriptionStatus = (getItem(STORAGE_KEYS.subscriptionStatus) as UserState['subscriptionStatus']) || 'none'
       this.accessUntil = getItem(STORAGE_KEYS.accessUntil)
       this.foundingMember = getItem(STORAGE_KEYS.foundingMember) === 'true'
+    },
+
+    async validateSession() {
+      if (!this.isAuthenticated) return false
+      try {
+        const response = await authService.me()
+        this.setUser(response.data.data.user)
+        return true
+      } catch {
+        this.clear()
+        return false
+      }
     },
 
     setUser(payload: {
