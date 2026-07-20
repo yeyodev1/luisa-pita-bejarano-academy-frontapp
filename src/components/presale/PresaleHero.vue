@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
 import { useCloudinary } from '@/composables/useCloudinary'
-import CountdownTimer from './CountdownTimer.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 
 const { luisa } = useCloudinary()
 
-const deadline = (import.meta.env.VITE_PRESALE_DEADLINE as string) || '2026-07-16T23:59:59-05:00'
 const heroImage = luisa(11, { w: 1600, h: 2200, crop: 'fill', gravity: 'face' })
 const heroImageSm = luisa(11, { w: 720, h: 1100, crop: 'fill', gravity: 'face' })
 const heroImageMd = luisa(11, { w: 1100, h: 1500, crop: 'fill', gravity: 'face' })
@@ -18,10 +14,6 @@ const scrollToPlans = () => {
   if (el) el.scrollIntoView({ behavior: 'smooth' })
 }
 
-const isExpired = computed(() => {
-  if (!deadline) return false
-  return new Date(deadline).getTime() < Date.now()
-})
 </script>
 
 <template>
@@ -45,30 +37,22 @@ const isExpired = computed(() => {
     <div class="presale-hero__inner">
       <span class="presale-hero__eyebrow eyebrow eyebrow--green">
         <span class="presale-hero__dot" aria-hidden="true" />
-        Preventa VIP abierta
+        Inscripciones abiertas
       </span>
 
       <h1 class="presale-hero__title display-xl">
-        Comunidad anual cerrada
+        Elige tu plan y empieza hoy
       </h1>
 
       <p class="presale-hero__lede">
-        Un año entero junto a Luisa para transformar tu cuerpo y tu vida.
-        Acompañamiento real, entrenamiento y nutrición sin dietas restrictivas.
+        Accede a la academia junto a Luisa para transformar tu cuerpo y tu vida.
+        Elige entre 1, 3, 6 o 12 meses de acompañamiento, entrenamiento y nutrición.
       </p>
 
-      <div class="presale-hero__countdown">
-        <p class="presale-hero__countdown-label">La preventa cierra en:</p>
-        <CountdownTimer :deadline="deadline" />
-      </div>
-
       <div class="presale-hero__cta-row">
-        <AppButton v-if="!isExpired" variant="primary" size="lg" @click="scrollToPlans">
-          Ver planes
+        <AppButton variant="primary" size="lg" @click="scrollToPlans">
+          Ver planes y comprar
         </AppButton>
-        <RouterLink v-else :to="{ name: 'register' }" class="presale-hero__link">
-          Únete a la lista de espera
-        </RouterLink>
       </div>
     </div>
   </section>
@@ -178,23 +162,6 @@ const isExpired = computed(() => {
   }
 }
 
-.presale-hero__countdown {
-  margin-top: 0.5rem;
-
-  @media (max-width: 720px) {
-    margin-inline: auto;
-  }
-}
-
-.presale-hero__countdown-label {
-  font-family: $font-mono;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba($lpb-white, 0.7);
-  margin: 0 0 0.75rem;
-}
-
 .presale-hero__cta-row {
   display: flex;
   flex-wrap: wrap;
@@ -219,27 +186,4 @@ const isExpired = computed(() => {
   }
 }
 
-.presale-hero__link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  padding: 1.15rem 1.95rem;
-  border-radius: 999px;
-  background: $lpb-green;
-  color: $lpb-black;
-  font-family: $font-mono;
-  font-size: 0.88rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: background 0.25s ease, transform 0.25s ease;
-
-  &:hover {
-    background: $lpb-green-dark;
-    color: $lpb-white;
-    transform: translateY(-2px);
-  }
-}
 </style>
