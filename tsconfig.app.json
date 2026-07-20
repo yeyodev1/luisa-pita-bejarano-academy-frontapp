@@ -15,5 +15,17 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "exclude": [
+    "src/views/dashboard/AchievementsView/**",
+    "src/views/dashboard/CourseDetailView/**",
+    "src/views/dashboard/CoursesView/**",
+    "src/views/dashboard/DashboardView/**",
+    "src/views/dashboard/LessonView/**",
+    "src/views/dashboard/LiveClassesView.vue",
+    "src/views/dashboard/LiveClassesView/**",
+    "src/views/dashboard/RecipesView/**",
+    "src/views/dashboard/ScheduleView.vue",
+    "src/views/dashboard/ScheduleView/**"
+  ]
 }

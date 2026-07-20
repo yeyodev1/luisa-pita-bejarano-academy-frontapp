@@ -1,0 +1,47 @@
+@mixin button {
+  .button {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font: 700 0.68rem $font-mono;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+  }
+  .button:hover { transform: translateY(-1px); }
+  .button:focus-visible { outline: 3px solid rgba($lpb-green, 0.45); outline-offset: 2px; }
+  .button--primary { background: $lpb-green; color: $lpb-black; border-color: $lpb-green; }
+  .button--quiet { background: $lpb-white; color: $lpb-black; }
+  .button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
+}
+
+@mixin eyebrow {
+  .eyebrow {
+    font: 700 0.65rem $font-mono;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $lpb-green-deep;
+  }
+}
+
+@mixin status {
+  .status {
+    display: inline-flex;
+    width: max-content;
+    padding: 0.22rem 0.45rem;
+    border-radius: 999px;
+    font: 700 0.56rem $font-mono;
+    text-transform: uppercase;
+    background: $lpb-cream;
+    color: $lpb-muted;
+  }
+  .status--published { background: rgba($lpb-green, 0.18); color: $lpb-green-deep; }
+  .status--archived { background: rgba($lpb-black, 0.08); color: $lpb-graphite; }
+}

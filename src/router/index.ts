@@ -12,6 +12,7 @@ declare module 'vue-router' {
     ogImage?: string
     requiresAuth?: boolean
     requiresAdmin?: boolean
+    requiresActiveAccess?: boolean
   }
 }
 
@@ -176,6 +177,7 @@ const routes: RouteRecordRaw[] = [
         name: 'dashboard',
         component: () => import('@/views/dashboard/DashboardView.vue'),
         meta: {
+          requiresActiveAccess: true,
           title: 'Mi cuenta | Luisa Pita Bejarano',
           description: 'Tu espacio personal de aprendizaje y transformación.',
           canonical: `${SITE}/app`,
@@ -190,6 +192,7 @@ const routes: RouteRecordRaw[] = [
         name: 'courses',
         component: () => import('@/views/dashboard/CoursesView.vue'),
         meta: {
+          requiresActiveAccess: true,
           title: 'Mis cursos | Luisa Pita Bejarano',
           description: 'Todos tus cursos disponibles.',
           canonical: `${SITE}/app/cursos`,
@@ -200,10 +203,11 @@ const routes: RouteRecordRaw[] = [
         } satisfies RouteMeta,
       },
       {
-        path: 'cursos/:courseId',
+        path: 'cursos/:slug',
         name: 'course-detail',
         component: () => import('@/views/dashboard/CourseDetailView.vue'),
         meta: {
+          requiresActiveAccess: true,
           title: 'Curso | Luisa Pita Bejarano',
           description: 'Contenido del curso.',
           canonical: `${SITE}/app/cursos`,
@@ -214,10 +218,11 @@ const routes: RouteRecordRaw[] = [
         } satisfies RouteMeta,
       },
       {
-        path: 'cursos/:courseId/clases/:lessonId',
+        path: 'cursos/:slug/clases/:lessonId',
         name: 'lesson',
         component: () => import('@/views/dashboard/LessonView.vue'),
         meta: {
+          requiresActiveAccess: true,
           title: 'Clase | Luisa Pita Bejarano',
           description: 'Clase en reproducción.',
           canonical: `${SITE}/app/cursos`,
@@ -228,38 +233,34 @@ const routes: RouteRecordRaw[] = [
         } satisfies RouteMeta,
       },
       {
-        path: 'clases-en-vivo',
-        name: 'live-classes',
-        component: () => import('@/views/dashboard/LiveClassesView.vue'),
+        path: 'calendario',
+        name: 'calendar',
+        component: () => import('@/views/dashboard/CalendarView.vue'),
         meta: {
-          title: 'Clases en vivo | Luisa Pita Bejarano',
-          description: 'Próximas clases en vivo con Luisa.',
-          canonical: `${SITE}/app/clases-en-vivo`,
-          ogTitle: 'Clases en vivo | Luisa Pita Bejarano',
-          ogDescription: 'Próximas clases en vivo con Luisa.',
-          ogUrl: `${SITE}/app/clases-en-vivo`,
+          requiresActiveAccess: true,
+          title: 'Calendario | Luisa Pita Bejarano',
+          description: 'Eventos y clases de la comunidad.',
+          canonical: `${SITE}/app/calendario`,
+          ogTitle: 'Calendario | Luisa Pita Bejarano',
+          ogDescription: 'Eventos y clases de la comunidad.',
+          ogUrl: `${SITE}/app/calendario`,
           ogImage: OG_IMAGE,
         } satisfies RouteMeta,
       },
       {
+        path: 'clases-en-vivo',
+        redirect: { name: 'calendar' },
+      },
+      {
         path: 'horario',
-        name: 'schedule',
-        component: () => import('@/views/dashboard/ScheduleView.vue'),
-        meta: {
-          title: 'Horario | Luisa Pita Bejarano',
-          description: 'Horario semanal de actividades.',
-          canonical: `${SITE}/app/horario`,
-          ogTitle: 'Horario | Luisa Pita Bejarano',
-          ogDescription: 'Horario semanal de actividades.',
-          ogUrl: `${SITE}/app/horario`,
-          ogImage: OG_IMAGE,
-        } satisfies RouteMeta,
+        redirect: { name: 'calendar' },
       },
       {
         path: 'recetas',
         name: 'recipes',
         component: () => import('@/views/dashboard/RecipesView.vue'),
         meta: {
+          requiresActiveAccess: true,
           title: 'Recetas | Luisa Pita Bejarano',
           description: 'Recetas saludables para tu transformación.',
           canonical: `${SITE}/app/recetas`,
@@ -274,6 +275,7 @@ const routes: RouteRecordRaw[] = [
         name: 'achievements',
         component: () => import('@/views/dashboard/AchievementsView.vue'),
         meta: {
+          requiresActiveAccess: true,
           title: 'Logros | Luisa Pita Bejarano',
           description: 'Tus logros y reconocimientos.',
           canonical: `${SITE}/app/logros`,
@@ -320,7 +322,31 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        redirect: { name: 'admin-users' },
+        redirect: { name: 'admin-courses' },
+      },
+      {
+        path: 'contenido/cursos', name: 'admin-courses', component: () => import('@/views/admin/AdminCoursesView.vue'),
+        meta: { title: 'Admin - Cursos | Luisa Pita Bejarano' },
+      },
+      {
+        path: 'contenido/calendario', name: 'admin-calendar', component: () => import('@/views/admin/AdminEntityView.vue'),
+        props: { kind: 'calendar', title: 'Calendario', assetField: 'cover', assetCategory: 'calendar', fields: [{ key: 'title', label: 'Título', required: true }, { key: 'description', label: 'Descripción', type: 'textarea' }, { key: 'startsAt', label: 'Inicio', type: 'datetime-local', required: true }, { key: 'endsAt', label: 'Fin', type: 'datetime-local' }, { key: 'timezone', label: 'Zona horaria', required: true }, { key: 'meetingUrl', label: 'Enlace Meet' }, { key: 'status', label: 'Estado', type: 'select', required: true, options: [{ value: 'draft', label: 'Borrador' }, { value: 'published', label: 'Publicado' }, { value: 'archived', label: 'Archivado' }] }] },
+        meta: { title: 'Admin - Calendario | Luisa Pita Bejarano' },
+      },
+      {
+        path: 'contenido/recetas', name: 'admin-recipes', component: () => import('@/views/admin/AdminEntityView.vue'),
+        props: { kind: 'recipes', title: 'Recetas', assetField: 'cover', assetCategory: 'recipes', fields: [{ key: 'title', label: 'Título', required: true }, { key: 'slug', label: 'Slug (opcional)' }, { key: 'summary', label: 'Resumen' }, { key: 'description', label: 'Descripción', type: 'textarea' }, { key: 'ingredients', label: 'Ingredientes (uno por línea)', type: 'textarea', list: true }, { key: 'instructions', label: 'Pasos (uno por línea)', type: 'textarea', list: true }, { key: 'prepMinutes', label: 'Minutos de preparación', type: 'number' }, { key: 'cookMinutes', label: 'Minutos de cocción', type: 'number' }, { key: 'servings', label: 'Porciones', type: 'number' }, { key: 'order', label: 'Orden', type: 'number' }, { key: 'status', label: 'Estado', type: 'select', required: true, options: [{ value: 'draft', label: 'Borrador' }, { value: 'published', label: 'Publicada' }, { value: 'archived', label: 'Archivada' }] }] },
+        meta: { title: 'Admin - Recetas | Luisa Pita Bejarano' },
+      },
+      {
+        path: 'contenido/logros', name: 'admin-achievements', component: () => import('@/views/admin/AdminEntityView.vue'),
+        props: { kind: 'achievements', title: 'Logros', assetField: 'icon', assetCategory: 'achievements', fields: [{ key: 'title', label: 'Título', required: true }, { key: 'slug', label: 'Slug (opcional)' }, { key: 'description', label: 'Descripción', type: 'textarea', required: true }, { key: 'order', label: 'Orden', type: 'number' }, { key: 'status', label: 'Estado', type: 'select', required: true, options: [{ value: 'draft', label: 'Borrador' }, { value: 'published', label: 'Publicado' }, { value: 'archived', label: 'Archivado' }] }] },
+        meta: { title: 'Admin - Logros | Luisa Pita Bejarano' },
+      },
+      {
+        path: 'contenido/comentarios', name: 'admin-comments', component: () => import('@/views/admin/AdminEntityView.vue'),
+        props: { kind: 'comments', title: 'Comentarios', fields: [], readonly: true },
+        meta: { title: 'Admin - Comentarios | Luisa Pita Bejarano' },
       },
       {
         path: 'usuarios',
@@ -394,10 +420,13 @@ router.beforeEach((to) => {
   if (to.meta.requiresAdmin && userStore.role !== 'admin') {
     return { name: 'no-permission' }
   }
+  if (to.meta.requiresActiveAccess && userStore.role !== 'admin' && !userStore.hasActiveAccess) {
+    return { name: 'payments' }
+  }
 
   // El home solo es para no-autenticados; si está logueado redirige.
   if (to.name === 'home' && userStore.isAuthenticated) {
-    if (userStore.role === 'admin') return { name: 'admin-users' }
+    if (userStore.role === 'admin') return { name: 'admin-courses' }
     if (userStore.hasActiveAccess) return { name: 'dashboard' }
     return { name: 'payments' }
   }
@@ -415,7 +444,7 @@ router.beforeEach((to) => {
 
   const publicAuthRoutes = ['login', 'register', 'forgot-password', 'reset-password']
   if (publicAuthRoutes.includes(String(to.name)) && userStore.isAuthenticated) {
-    if (userStore.role === 'admin') return { name: 'admin-users' }
+    if (userStore.role === 'admin') return { name: 'admin-courses' }
     if (userStore.hasActiveAccess) return { name: 'dashboard' }
     return { name: 'payments' }
   }

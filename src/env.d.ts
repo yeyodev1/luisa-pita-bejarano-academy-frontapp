@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 
+interface Window {
+  cloudinary?: {
+    createUploadWidget: (options: Record<string, unknown>, callback: (error: unknown, result: any) => void) => { open: () => void; close: () => void }
+  }
+}
+
 // Meta Pixel global
 declare function fbq(command: string, event: string, params?: Record<string, unknown>): void;
 declare function fbq(command: 'init', pixelId: string): void;

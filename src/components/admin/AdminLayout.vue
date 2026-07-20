@@ -13,6 +13,11 @@ const mobileMenuOpen = ref(false)
 const showLogoutConfirm = ref(false)
 
 const menuItems = [
+  { name: 'admin-courses', label: 'Cursos y clases', icon: 'book' },
+  { name: 'admin-calendar', label: 'Calendario', icon: 'calendar' },
+  { name: 'admin-recipes', label: 'Recetas', icon: 'utensils' },
+  { name: 'admin-achievements', label: 'Logros', icon: 'trophy' },
+  { name: 'admin-comments', label: 'Comentarios', icon: 'comments' },
   { name: 'admin-users', label: 'Usuarios', icon: 'users' },
   { name: 'admin-payments', label: 'Pagos manuales', icon: 'money-bill' },
 ]
@@ -68,6 +73,11 @@ function logout() {
               :class="{
                 'fa-users': item.icon === 'users',
                 'fa-money-bill': item.icon === 'money-bill',
+                'fa-book': item.icon === 'book',
+                'fa-calendar': item.icon === 'calendar',
+                'fa-utensils': item.icon === 'utensils',
+                'fa-trophy': item.icon === 'trophy',
+                'fa-comments': item.icon === 'comments',
               }"
             />
           </span>

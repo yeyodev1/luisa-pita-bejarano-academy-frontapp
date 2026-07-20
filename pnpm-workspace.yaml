@@ -1,3 +1,9 @@
-allowBuilds:
-  '@parcel/watcher': set this to true or false
-  esbuild: set this to true or false
+packages: []
+
+overrides:
+  form-data: ^4.0.6
+  uuid: ^11.1.1
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild
