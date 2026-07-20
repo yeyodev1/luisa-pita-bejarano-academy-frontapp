@@ -11,6 +11,7 @@ import CancelSection from './CancelSection.vue'
 import PaymentHistory from './PaymentHistory.vue'
 import TransferInfoModal from './TransferInfoModal.vue'
 import type { PaymentItem } from './PaymentHistory.vue'
+import { paymentPlanLabel, type PaymentPlan } from '@/constants/paymentPlans'
 
 const userStore = useUserStore()
 
@@ -25,14 +26,7 @@ const showTransferModal = ref(false)
 
 const history = ref<PaymentItem[]>([])
 
-const monthlyPrice = Number(import.meta.env.VITE_MONTHLY_PRICE) || 47
-const annualPrice = Number(import.meta.env.VITE_ANNUAL_PRICE) || 297
 const whatsappNumber = (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '593992019807'
-const launchDeadline = (import.meta.env.VITE_LAUNCH_DEADLINE as string) || '2026-07-16T00:00:00-05:00'
-
-const isMonthlyAvailable = computed(() => {
-  return new Date().getTime() >= new Date(launchDeadline).getTime()
-})
 
 const isActive = computed(() => {
   if (!userStore.accessUntil) return false
@@ -55,8 +49,7 @@ const currentPlan = computed(() => {
 
 const planLabel = computed(() => {
   if (userStore.foundingMember) return 'Miembro Fundador'
-  if (currentPlan.value === 'annual') return 'Plan Anual'
-  if (currentPlan.value === 'monthly') return 'Plan Mensual'
+  if (currentPlan.value) return paymentPlanLabel(currentPlan.value)
   return 'Sin plan activo'
 })
 
@@ -95,15 +88,7 @@ async function loadHistory() {
   }
 }
 
-async function payMonthly() {
-  await initiatePayment('monthly')
-}
-
-async function payAnnual() {
-  await initiatePayment('annual')
-}
-
-async function initiatePayment(plan: 'monthly' | 'annual') {
+async function initiatePayment(plan: PaymentPlan) {
   loading.value = true
   error.value = ''
   try {
@@ -112,10 +97,7 @@ async function initiatePayment(plan: 'monthly' | 'annual') {
       name: userStore.name || '',
       lastName: userStore.lastName || '',
     }
-    const { data } =
-      plan === 'monthly'
-        ? await paymentService.prepareMonthly(payload)
-        : await paymentService.prepareAnnual(payload)
+    const { data } = await paymentService.preparePlan({ ...payload, plan })
 
     const payUrl = data.data.payWithCard
     if (payUrl) {
@@ -196,7 +178,6 @@ onMounted(loadHistory)
       :is-founding-member="userStore.foundingMember"
       :access-until-label="accessUntilLabel"
       :access-until-date="accessUntilDate"
-      :annual-price="annualPrice"
       @go-to-payment-page="goToPaymentPage"
     />
 
@@ -209,11 +190,7 @@ onMounted(loadHistory)
     <PaymentPlanCards
       v-if="!isActive"
       :loading="loading"
-      :is-monthly-available="isMonthlyAvailable"
-      :monthly-price="monthlyPrice"
-      :annual-price="annualPrice"
-      @pay-monthly="payMonthly"
-      @pay-annual="payAnnual"
+      @pay="initiatePayment"
       @open-transfer="openTransferModal"
     />
 
@@ -251,7 +228,6 @@ onMounted(loadHistory)
 
     <TransferInfoModal
       :show="showTransferModal"
-      :annual-price="annualPrice"
       @confirm="goToWhatsApp"
       @cancel="closeTransferModal"
     />

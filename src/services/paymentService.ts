@@ -1,5 +1,6 @@
 import APIBase from './httpBase'
 import type { ApiResponse } from './authService'
+import type { PaymentPlan } from '@/constants/paymentPlans'
 
 export interface PreparePaymentResponse {
   paymentId: string
@@ -42,7 +43,14 @@ class PaymentService extends APIBase {
     })
   }
 
-  async prepareBox(payload: { email: string; name: string; lastName: string; plan: 'annual' | 'monthly' }) {
+  async preparePlan(payload: { email: string; name: string; lastName: string; plan: PaymentPlan }) {
+    return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare-plan', {
+      ...payload,
+      origin: window.location.origin,
+    })
+  }
+
+  async prepareBox(payload: { email: string; name: string; lastName: string; plan: PaymentPlan }) {
     return this.post<ApiResponse<PaymentBoxConfig>>('payments/prepare-box', {
       ...payload,
       origin: window.location.origin,
@@ -63,7 +71,7 @@ class PaymentService extends APIBase {
     return this.get<ApiResponse<{ history: Array<{
       id: string
       type: 'manual' | 'payphone'
-      plan: 'monthly' | 'annual'
+      plan: PaymentPlan
       amount: number
       currency: 'USD'
       status: string
