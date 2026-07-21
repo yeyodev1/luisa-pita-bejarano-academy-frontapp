@@ -11,6 +11,7 @@ import type {
   Pagination,
   ProgressUpdateResponse,
   Recipe,
+  RecordedClass,
 } from '@/types'
 
 const ROOT = 'academy'
@@ -66,6 +67,18 @@ class ContentService extends APIBase {
 
   getAssetDelivery(asset: Pick<MediaAsset, 'publicId' | 'resourceType' | 'provider'>) {
     return this.post<ApiResponse<MediaDelivery>>(`${ROOT}/assets/delivery-url`, asset)
+  }
+
+  getRecordedClasses(params?: { page?: number; limit?: number }) {
+    return this.get<ApiResponse<{ classes: RecordedClass[]; pagination: Pagination }>>(
+      `${ROOT}/recorded-classes`,
+      undefined,
+      { params: { limit: 50, ...params } },
+    )
+  }
+
+  getRecordedClass(id: string) {
+    return this.get<ApiResponse<RecordedClass>>(`${ROOT}/recorded-classes/${id}`)
   }
 }
 
