@@ -161,6 +161,7 @@ function logout() {
               'fa-book-open': item.icon === 'book-open',
               'fa-video': item.icon === 'video',
               'fa-calendar-days': item.icon === 'calendar',
+              'fa-film': item.icon === 'film',
               'fa-utensils': item.icon === 'utensils',
               'fa-trophy': item.icon === 'trophy',
               'fa-credit-card': item.icon === 'credit-card',
