@@ -54,6 +54,7 @@ const menuItems = computed(() => {
   const items = [
     { name: 'dashboard', label: 'Inicio', icon: 'home' },
     { name: 'calendar', label: 'Calendario', icon: 'calendar' },
+    { name: 'recorded-classes', label: 'Clases grabadas', icon: 'film' },
     { name: 'courses', label: 'Mis cursos', icon: 'book-open' },
     { name: 'recipes', label: 'Recetas', icon: 'utensils' },
     { name: 'achievements', label: 'Logros', icon: 'trophy' },

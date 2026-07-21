@@ -286,6 +286,21 @@ const routes: RouteRecordRaw[] = [
         } satisfies RouteMeta,
       },
       {
+        path: 'clases-grabadas',
+        name: 'recorded-classes',
+        component: () => import('@/views/dashboard/RecordedClassesView/index.vue'),
+        meta: {
+          requiresActiveAccess: true,
+          title: 'Clases grabadas | Luisa Pita Bejarano',
+          description: 'Biblioteca de clases en vivo grabadas de Luisa Pita Bejarano.',
+          canonical: `${SITE}/app/clases-grabadas`,
+          ogTitle: 'Clases grabadas | Luisa Pita Bejarano',
+          ogDescription: 'Revisa las grabaciones de cada clase en vivo.',
+          ogUrl: `${SITE}/app/clases-grabadas`,
+          ogImage: OG_IMAGE,
+        } satisfies RouteMeta,
+      },
+      {
         path: 'configuracion',
         name: 'settings',
         component: () => import('@/views/dashboard/SettingsView/index.vue'),
@@ -347,6 +362,12 @@ const routes: RouteRecordRaw[] = [
         path: 'contenido/comentarios', name: 'admin-comments', component: () => import('@/views/admin/AdminEntityView.vue'),
         props: { kind: 'comments', title: 'Comentarios', fields: [], readonly: true },
         meta: { title: 'Admin - Comentarios | Luisa Pita Bejarano' },
+      },
+      {
+        path: 'contenido/clases-grabadas',
+        name: 'admin-recorded-classes',
+        component: () => import('@/views/admin/AdminRecordedClassesView.vue'),
+        meta: { title: 'Admin - Clases grabadas | Luisa Pita Bejarano' },
       },
       {
         path: 'usuarios',

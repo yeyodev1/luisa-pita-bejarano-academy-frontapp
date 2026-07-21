@@ -176,3 +176,16 @@ export interface ProgressUpdateResponse {
   progress: LessonProgress
   courseProgress: CourseProgress
 }
+
+export interface RecordedClass {
+  _id: string
+  title: string
+  classDate: string
+  startsAt: string
+  endsAt: string
+  recordingUrl: string
+  notesUrl?: string
+  status?: ContentStatus
+  createdAt?: string
+  updatedAt?: string
+}

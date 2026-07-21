@@ -1,5 +1,5 @@
 import APIBase from './httpBase'
-import type { ApiResponse, MediaAsset, Pagination, ResourceType } from '@/types'
+import type { ApiResponse, MediaAsset, Pagination, RecordedClass, ResourceType } from '@/types'
 
 export type ContentKind = 'courses' | 'calendar' | 'recipes' | 'achievements' | 'comments'
 export type AssetCategory = 'courses' | 'lessons' | 'materials' | 'calendar' | 'recipes' | 'achievements'
@@ -128,6 +128,31 @@ class AdminContentService extends APIBase {
     return this.delete<ApiResponse<{ publicId: string; result: string }>>('admin/assets', undefined, {
       data: { publicId, resourceType, provider },
     })
+  }
+
+  // ── Recorded Classes ───────────────────────────────────────────────────────
+  listRecordedClasses(params?: Record<string, string | number>) {
+    return this.get<ApiResponse<{ classes: RecordedClass[]; pagination: Pagination }>>(
+      'admin/recorded-classes',
+      undefined,
+      { params: { limit: 100, ...params } },
+    )
+  }
+
+  getRecordedClass(id: string) {
+    return this.get<ApiResponse<RecordedClass>>(`admin/recorded-classes/${id}`)
+  }
+
+  createRecordedClass(payload: Omit<RecordedClass, '_id' | 'createdAt' | 'updatedAt'>) {
+    return this.post<ApiResponse<RecordedClass>>('admin/recorded-classes', payload)
+  }
+
+  updateRecordedClass(id: string, payload: Partial<Omit<RecordedClass, '_id' | 'createdAt' | 'updatedAt'>>) {
+    return this.put<ApiResponse<RecordedClass>>(`admin/recorded-classes/${id}`, payload)
+  }
+
+  deleteRecordedClass(id: string) {
+    return this.delete<ApiResponse<{ deleted: boolean }>>(`admin/recorded-classes/${id}`)
   }
 }
 
