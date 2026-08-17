@@ -57,6 +57,7 @@ const menuItems = computed(() => {
     { name: 'recorded-classes', label: 'Clases grabadas', icon: 'film' },
     { name: 'courses', label: 'Mis cursos', icon: 'book-open' },
     { name: 'recipes', label: 'Recetas', icon: 'utensils' },
+    { name: 'my-progress', label: 'Mi progreso', icon: 'weight-scale' },
     { name: 'achievements', label: 'Logros', icon: 'trophy' },
     { name: 'payments', label: 'Pagos', icon: 'credit-card' },
   ]
@@ -163,6 +164,7 @@ function logout() {
               'fa-calendar-days': item.icon === 'calendar',
               'fa-film': item.icon === 'film',
               'fa-utensils': item.icon === 'utensils',
+              'fa-weight-scale': item.icon === 'weight-scale',
               'fa-trophy': item.icon === 'trophy',
               'fa-credit-card': item.icon === 'credit-card',
               'fa-user-shield': item.icon === 'user-shield',

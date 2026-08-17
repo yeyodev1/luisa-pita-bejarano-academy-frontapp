@@ -1,5 +1,6 @@
 import APIBase from './httpBase'
 import type { ApiResponse, MediaAsset, Pagination, RecordedClass, ResourceType } from '@/types'
+import type { CheckpointPayload, PhysicalAssessment, ProfilePayload } from '@/types/assessment'
 
 export type ContentKind = 'courses' | 'calendar' | 'recipes' | 'achievements' | 'comments'
 export type AssetCategory = 'courses' | 'lessons' | 'materials' | 'calendar' | 'recipes' | 'achievements'
@@ -153,6 +154,40 @@ class AdminContentService extends APIBase {
 
   deleteRecordedClass(id: string) {
     return this.delete<ApiResponse<{ deleted: boolean }>>(`admin/recorded-classes/${id}`)
+  }
+
+  // ── Physical Assessments ───────────────────────────────────────────────────
+  listAssessments(params?: Record<string, string | number>) {
+    return this.get<ApiResponse<{ assessments: PhysicalAssessment[]; pagination: Pagination }>>(
+      'admin/assessments',
+      undefined,
+      { params: { limit: 100, ...params } },
+    )
+  }
+
+  getAssessment(userId: string) {
+    return this.get<ApiResponse<PhysicalAssessment | null>>(`admin/assessments/${userId}`)
+  }
+
+  saveAssessmentProfile(userId: string, payload: ProfilePayload) {
+    return this.put<ApiResponse<PhysicalAssessment>>(`admin/assessments/${userId}/profile`, payload)
+  }
+
+  addAssessmentCheckpoint(userId: string, payload: CheckpointPayload) {
+    return this.post<ApiResponse<PhysicalAssessment>>(`admin/assessments/${userId}/checkpoints`, payload)
+  }
+
+  updateAssessmentCheckpoint(userId: string, checkpointId: string, payload: CheckpointPayload) {
+    return this.put<ApiResponse<PhysicalAssessment>>(
+      `admin/assessments/${userId}/checkpoints/${checkpointId}`,
+      payload,
+    )
+  }
+
+  deleteAssessmentCheckpoint(userId: string, checkpointId: string) {
+    return this.delete<ApiResponse<PhysicalAssessment>>(
+      `admin/assessments/${userId}/checkpoints/${checkpointId}`,
+    )
   }
 }
 

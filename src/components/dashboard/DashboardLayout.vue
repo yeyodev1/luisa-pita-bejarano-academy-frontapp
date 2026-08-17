@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardPageHeader from './DashboardPageHeader.vue'
 import DashboardSkeleton from './DashboardSkeleton.vue'
+import MonthlyAssessmentNudge from '@/components/assessment/MonthlyAssessmentNudge.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -42,6 +43,7 @@ function toggleMobileMenu() {
 <template>
   <div class="dashboard">
     <DashboardSidebar :open="mobileMenuOpen" @close="mobileMenuOpen = false" />
+    <MonthlyAssessmentNudge />
     <div class="dashboard__main">
       <button
         class="dashboard__menu"

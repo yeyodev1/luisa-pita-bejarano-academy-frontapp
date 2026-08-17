@@ -10,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (e: 'assessment', user: AdminUser): void
   (e: 'extend', user: AdminUser): void
   (e: 'revoke', user: AdminUser): void
   (e: 'delete', user: AdminUser): void
@@ -137,6 +138,14 @@ const isCurrentUser = computed(() => (id: string) => id === userStore.id)
               </td>
               <td>
                 <div class="admin-users__actions">
+                  <button
+                    v-if="user.role === 'user'"
+                    class="admin-users__action admin-users__action--assessment"
+                    title="Valoración física"
+                    @click="emit('assessment', user)"
+                  >
+                    <i class="fa-solid fa-weight-scale" />
+                  </button>
                   <button
                     v-if="user.role === 'user'"
                     class="admin-users__action"

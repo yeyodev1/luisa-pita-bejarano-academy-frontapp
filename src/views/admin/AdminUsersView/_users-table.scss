@@ -187,6 +187,15 @@
     transform: translateY(-1px);
   }
 
+  &--assessment {
+    background: rgba($lpb-green-deep, 0.1);
+    color: $lpb-green-deep;
+
+    &:hover {
+      background: rgba($lpb-green-deep, 0.2);
+    }
+  }
+
   &--extend {
     background: rgba($lpb-green, 0.1);
     color: $lpb-green-deep;
