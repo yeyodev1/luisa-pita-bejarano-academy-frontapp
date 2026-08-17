@@ -13,6 +13,7 @@ import type {
   Recipe,
   RecordedClass,
 } from '@/types'
+import type { CheckpointPayload, PhysicalAssessment, ProfilePayload } from '@/types/assessment'
 
 const ROOT = 'academy'
 
@@ -79,6 +80,26 @@ class ContentService extends APIBase {
 
   getRecordedClass(id: string) {
     return this.get<ApiResponse<RecordedClass>>(`${ROOT}/recorded-classes/${id}`)
+  }
+
+  // ── Mi valoración física ───────────────────────────────────────────────────
+  getMyAssessment() {
+    return this.get<ApiResponse<PhysicalAssessment | null>>(`${ROOT}/my-assessment`)
+  }
+
+  saveMyAssessmentProfile(payload: ProfilePayload) {
+    return this.put<ApiResponse<PhysicalAssessment>>(`${ROOT}/my-assessment/profile`, payload)
+  }
+
+  addMyAssessmentCheckpoint(payload: CheckpointPayload) {
+    return this.post<ApiResponse<PhysicalAssessment>>(`${ROOT}/my-assessment/checkpoints`, payload)
+  }
+
+  updateMyAssessmentCheckpoint(checkpointId: string, payload: CheckpointPayload) {
+    return this.put<ApiResponse<PhysicalAssessment>>(
+      `${ROOT}/my-assessment/checkpoints/${checkpointId}`,
+      payload,
+    )
   }
 }
 

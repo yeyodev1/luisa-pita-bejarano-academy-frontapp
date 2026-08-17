@@ -19,6 +19,7 @@ const menuItems = [
   { name: 'admin-recipes', label: 'Recetas', icon: 'utensils' },
   { name: 'admin-achievements', label: 'Logros', icon: 'trophy' },
   { name: 'admin-comments', label: 'Comentarios', icon: 'comments' },
+  { name: 'admin-assessments', label: 'Valoraciones', icon: 'weight-scale' },
   { name: 'admin-users', label: 'Usuarios', icon: 'users' },
   { name: 'admin-payments', label: 'Pagos manuales', icon: 'money-bill' },
 ]
@@ -79,6 +80,8 @@ function logout() {
                 'fa-utensils': item.icon === 'utensils',
                 'fa-trophy': item.icon === 'trophy',
                 'fa-comments': item.icon === 'comments',
+                'fa-film': item.icon === 'film',
+                'fa-weight-scale': item.icon === 'weight-scale',
               }"
             />
           </span>

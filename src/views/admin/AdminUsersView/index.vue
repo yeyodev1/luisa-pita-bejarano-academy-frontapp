@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { adminService, type AdminUser, type CreateUserPayload } from '@/services/adminService'
 import { useUserStore } from '@/stores/user'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
@@ -10,6 +11,15 @@ import CreateUserModal from './CreateUserModal.vue'
 import ExtendAccessModal from './ExtendAccessModal.vue'
 
 const userStore = useUserStore()
+const router = useRouter()
+
+function openAssessment(user: AdminUser) {
+  router.push({
+    name: 'admin-assessment',
+    params: { userId: user.id },
+    query: { name: `${user.name} ${user.lastName}`.trim() },
+  })
+}
 
 const users = ref<AdminUser[]>([])
 const loading = ref(false)
@@ -239,6 +249,7 @@ onMounted(loadUsers)
       :users="users"
       :skeleton-loading="skeletonLoading"
       :has-filters="hasFilters"
+      @assessment="openAssessment"
       @extend="openExtendModal"
       @revoke="confirmRevoke"
       @delete="confirmDelete"
