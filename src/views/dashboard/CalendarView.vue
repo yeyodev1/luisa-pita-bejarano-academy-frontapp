@@ -9,7 +9,8 @@ import esLocale from '@fullcalendar/core/locales/es'
 import { useDashboardStore } from '@/stores/dashboard'
 
 const ECUADOR_TIMEZONE = 'America/Guayaquil'
-const MEETING_URL = 'https://meet.google.com/tik-vsks-pbc'
+const CLASS_MEETING_URL = 'https://meet.google.com/tik-vsks-pbc'
+const CAFECITO_MEETING_URL = 'https://meet.google.com/evz-dpuc-nho'
 const store = useDashboardStore()
 
 const weeklySchedule = [
@@ -23,6 +24,7 @@ const weeklySchedule = [
     endTime: '07:00:00',
     color: '#536d59',
     icon: 'fa-person-running',
+    meetingUrl: CLASS_MEETING_URL,
   },
   {
     id: 'cafecito-luisa',
@@ -34,6 +36,7 @@ const weeklySchedule = [
     endTime: '17:00:00',
     color: '#a66f32',
     icon: 'fa-mug-hot',
+    meetingUrl: CAFECITO_MEETING_URL,
   },
 ] as const
 
@@ -45,7 +48,7 @@ const recurringEvents: EventInput[] = weeklySchedule.map((event) => ({
   endTime: event.endTime,
   backgroundColor: event.color,
   borderColor: event.color,
-  extendedProps: { meetingUrl: MEETING_URL },
+  extendedProps: { meetingUrl: event.meetingUrl },
 }))
 
 const calendarEvents = computed<EventInput[]>(() => [
@@ -62,8 +65,8 @@ const calendarEvents = computed<EventInput[]>(() => [
   })),
 ])
 
-function openMeeting() {
-  window.open(MEETING_URL, '_blank', 'noopener')
+function openMeeting(url: string) {
+  window.open(url, '_blank', 'noopener')
 }
 
 function openEventMeeting({ event }: EventClickArg) {
@@ -128,7 +131,7 @@ onMounted(() => store.fetchCalendar())
             <strong>{{ event.time }}</strong>
             <small>Hora Ecuador</small>
           </div>
-          <button type="button" class="schedule-card__button" @click="openMeeting">
+          <button type="button" class="schedule-card__button" @click="openMeeting(event.meetingUrl)">
             <i class="fa-solid fa-video" />
             Abrir Google Meet
           </button>
