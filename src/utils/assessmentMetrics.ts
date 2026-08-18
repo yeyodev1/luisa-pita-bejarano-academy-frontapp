@@ -9,6 +9,8 @@ export interface MetricDef {
   group: MetricGroup
   /** Dirección que cuenta como mejora para colorear deltas */
   betterWhen: 'down' | 'up'
+  /** Se pide siempre; el resto queda plegado para no abrumar. */
+  essential?: boolean
 }
 
 export interface MetricSection {
@@ -20,7 +22,7 @@ export const METRIC_SECTIONS: MetricSection[] = [
   {
     title: 'Composición corporal',
     metrics: [
-      { key: 'pesoKg', label: 'Peso', unit: 'kg', group: 'composicion', betterWhen: 'down' },
+      { key: 'pesoKg', label: 'Peso', unit: 'kg', group: 'composicion', betterWhen: 'down', essential: true },
       { key: 'grasaPct', label: '% de grasa', unit: '%', group: 'composicion', betterWhen: 'down' },
       { key: 'musculoPct', label: '% de músculo', unit: '%', group: 'composicion', betterWhen: 'up' },
     ],
@@ -29,9 +31,9 @@ export const METRIC_SECTIONS: MetricSection[] = [
     title: 'Medidas corporales',
     metrics: [
       { key: 'busto', label: 'Busto', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'cintura', label: 'Cintura', unit: 'cm', group: 'medidas', betterWhen: 'down' },
+      { key: 'cintura', label: 'Cintura', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
       { key: 'abdomen', label: 'Abdomen', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'cadera', label: 'Cadera', unit: 'cm', group: 'medidas', betterWhen: 'down' },
+      { key: 'cadera', label: 'Cadera', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
       { key: 'brazoDer', label: 'Brazo derecho', unit: 'cm', group: 'medidas', betterWhen: 'down' },
       { key: 'brazoIzq', label: 'Brazo izquierdo', unit: 'cm', group: 'medidas', betterWhen: 'down' },
       { key: 'musloDer', label: 'Muslo derecho', unit: 'cm', group: 'medidas', betterWhen: 'down' },
@@ -56,6 +58,15 @@ export const METRIC_SECTIONS: MetricSection[] = [
 export function checkpointLabel(monthIndex: number): string {
   return monthIndex === 0 ? 'Inicial' : `Mes ${monthIndex}`
 }
+
+export const ESSENTIAL_METRICS: MetricDef[] = METRIC_SECTIONS.flatMap((s) =>
+  s.metrics.filter((m) => m.essential),
+)
+
+export const OPTIONAL_SECTIONS: MetricSection[] = METRIC_SECTIONS.map((s) => ({
+  title: s.title,
+  metrics: s.metrics.filter((m) => !m.essential),
+})).filter((s) => s.metrics.length > 0)
 
 export function sortedCheckpoints(assessment: PhysicalAssessment | null): AssessmentCheckpoint[] {
   if (!assessment) return []
