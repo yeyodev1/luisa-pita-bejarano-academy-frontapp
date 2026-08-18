@@ -12,6 +12,7 @@ function statusLabel(s: string) {
     case 'active': return 'Activa'
     case 'pending': return 'Pendiente'
     case 'canceled': return 'Cancelada'
+    case 'expired': return 'Vencida'
     default: return 'Sin suscripción activa'
   }
 }
@@ -19,12 +20,18 @@ function statusLabel(s: string) {
 function isActive(s: string) {
   return s === 'active'
 }
+
+function isExpired(s: string) {
+  return s === 'expired'
+}
 </script>
 
 <template>
   <section class="card">
     <h2 class="card__title">Información de suscripción</h2>
 
+    <Transition name="sub-state" mode="out-in">
+    <div :key="subscriptionStatus" class="card__state">
     <template v-if="isActive(subscriptionStatus)">
       <div class="grid">
         <div class="item">
@@ -42,11 +49,28 @@ function isActive(s: string) {
       </div>
     </template>
 
+    <template v-else-if="isExpired(subscriptionStatus)">
+      <div class="grid">
+        <div class="item">
+          <span class="item__label">Estado</span>
+          <span class="item__value item__value--expired">{{ statusLabel(subscriptionStatus) }}</span>
+        </div>
+        <div class="item">
+          <span class="item__label">Venció el</span>
+          <span class="item__value">{{ accessUntilLabel }}</span>
+        </div>
+      </div>
+      <p class="none__sub">Renueva tu plan para recuperar el acceso a la plataforma.</p>
+      <RouterLink :to="{ name: 'payments' }" class="none__cta">Renovar suscripción</RouterLink>
+    </template>
+
     <template v-else>
       <p class="none">Aún no tienes una suscripción activa.</p>
       <p class="none__sub">Elige un plan y obtén acceso completo a la plataforma.</p>
       <RouterLink :to="{ name: 'payments' }" class="none__cta">Ver suscripciones</RouterLink>
     </template>
+    </div>
+    </Transition>
   </section>
 </template>
 
@@ -66,6 +90,44 @@ function isActive(s: string) {
     font-weight: 400;
     color: $lpb-black;
     margin: 0;
+  }
+
+  &__state {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+/* El estado puede cambiar solo al vencer el acceso; la transición evita que
+   la tarjeta salte de "Activa" a "Vencida" sin aviso visual. */
+.sub-state-enter-active {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.7, 0, 1);
+}
+
+.sub-state-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.sub-state-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.sub-state-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sub-state-enter-active,
+  .sub-state-leave-active {
+    transition: opacity 0.2s ease;
+  }
+
+  .sub-state-enter-from,
+  .sub-state-leave-to {
+    transform: none;
   }
 }
 
@@ -99,7 +161,32 @@ function isActive(s: string) {
     color: $lpb-black;
 
     &--active { color: $lpb-green-deep; }
+
+    &--expired {
+      color: $alert-error;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+
+      &::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: sub-pulse 2s ease-in-out infinite;
+      }
+    }
   }
+}
+
+@keyframes sub-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item__value--expired::before { animation: none; }
 }
 
 .none {

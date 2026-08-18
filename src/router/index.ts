@@ -154,6 +154,20 @@ const routes: RouteRecordRaw[] = [
     } satisfies RouteMeta,
   },
   {
+    path: '/pago/nuvei',
+    name: 'nuvei-result',
+    component: () => import('@/views/NuveiResultView.vue'),
+    meta: {
+      title: 'Confirmación de pago | Luisa Pita Bejarano',
+      description: 'Resultado de tu pago en la comunidad anual Luisa Pita Bejarano.',
+      canonical: `${SITE}/pago/nuvei`,
+      ogTitle: 'Confirmación de pago | Luisa Pita Bejarano',
+      ogDescription: 'Resultado de tu pago en la comunidad anual Luisa Pita Bejarano.',
+      ogUrl: `${SITE}/pago/nuvei`,
+      ogImage: OG_IMAGE,
+    } satisfies RouteMeta,
+  },
+  {
     path: '/pay-response',
     name: 'pay-response',
     component: () => import('@/views/PaymentResultView.vue'),

@@ -185,9 +185,15 @@ function logout() {
         />
         <div class="sidebar__profile-info">
           <span class="sidebar__profile-name">{{ userStore.fullName }}</span>
-          <span class="sidebar__profile-status">
-            Miembro {{ userStore.subscriptionStatus === 'active' ? 'VIP' : 'registrado' }}
-          </span>
+          <Transition name="status-swap" mode="out-in">
+            <span
+              :key="userStore.hasActiveAccess ? 'vip' : 'registrado'"
+              class="sidebar__profile-status"
+              :class="{ 'sidebar__profile-status--expired': userStore.accessExpired }"
+            >
+              Miembro {{ userStore.hasActiveAccess ? 'VIP' : 'registrado' }}
+            </span>
+          </Transition>
         </div>
       </div>
 
@@ -390,6 +396,42 @@ function logout() {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: $lpb-green-deep;
+
+  /* Al vencer el acceso el badge deja de ser verde: el estado cambia solo,
+     sin que el usuario haga nada, así que necesita señal visual propia. */
+  &--expired {
+    color: $alert-error;
+  }
+}
+
+.status-swap-enter-active {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.7, 0, 1);
+}
+
+.status-swap-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.status-swap-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.status-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-swap-enter-active,
+  .status-swap-leave-active {
+    transition: opacity 0.15s ease;
+  }
+
+  .status-swap-enter-from,
+  .status-swap-leave-to {
+    transform: none;
+  }
 }
 
 .sidebar__actions {

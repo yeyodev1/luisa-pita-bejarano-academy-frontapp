@@ -97,6 +97,18 @@ async function initiatePayment(plan: PaymentPlan) {
       name: userStore.name || '',
       lastName: userStore.lastName || '',
     }
+
+    // Nuvei es la pasarela preferida; si el comercio aún no está activado,
+    // el backend responde enabled:false y seguimos con PayPhone.
+    if (await paymentService.nuveiEnabled()) {
+      const { data } = await paymentService.createNuveiLink({ ...payload, plan })
+      const nuveiUrl = data.data.paymentUrl
+      if (nuveiUrl) {
+        window.location.href = nuveiUrl
+        return
+      }
+    }
+
     const { data } = await paymentService.preparePlan({ ...payload, plan })
 
     const payUrl = data.data.payWithCard

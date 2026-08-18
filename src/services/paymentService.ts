@@ -28,6 +28,24 @@ export interface ConfirmPaymentResponse {
   email?: string
 }
 
+export interface NuveiLinkResponse {
+  paymentUrl: string
+  paymentQr?: string
+  devReference: string
+  amount: number
+  isNewUser: boolean
+}
+
+export interface NuveiStatusResponse {
+  status: 'pending' | 'approved' | 'failed' | 'canceled'
+  plan: PaymentPlan
+  amount: number
+  transactionId?: string
+  isNewUser?: boolean
+  plainPassword?: string
+  email?: string
+}
+
 class PaymentService extends APIBase {
   async prepareAnnual(payload: { email: string; name: string; lastName: string }) {
     return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare', {
@@ -70,7 +88,7 @@ class PaymentService extends APIBase {
   async history() {
     return this.get<ApiResponse<{ history: Array<{
       id: string
-      type: 'manual' | 'payphone'
+      type: 'manual' | 'payphone' | 'nuvei'
       plan: PaymentPlan
       amount: number
       currency: 'USD'
@@ -89,6 +107,33 @@ class PaymentService extends APIBase {
 
   async cancelSubscription() {
     return this.post<ApiResponse<{ email: string; subscriptionStatus: string }>>('payments/cancel-subscription', {})
+  }
+
+  // ── Nuvei (Link to Pay) ────────────────────────────────────────────────────
+  /** Mientras el comercio no esté activado por Nuvei esto devuelve enabled:false. */
+  async nuveiEnabled(): Promise<boolean> {
+    try {
+      const res = await this.get<ApiResponse<{ enabled: boolean }>>('payments/nuvei/health')
+      return res.data.data.enabled === true
+    } catch {
+      return false
+    }
+  }
+
+  async createNuveiLink(payload: {
+    email: string
+    name: string
+    lastName: string
+    plan: PaymentPlan
+  }) {
+    return this.post<ApiResponse<NuveiLinkResponse>>('payments/nuvei/create-link', {
+      ...payload,
+      origin: window.location.origin,
+    })
+  }
+
+  async nuveiStatus(devReference: string) {
+    return this.get<ApiResponse<NuveiStatusResponse>>(`payments/nuvei/status/${devReference}`)
   }
 }
 

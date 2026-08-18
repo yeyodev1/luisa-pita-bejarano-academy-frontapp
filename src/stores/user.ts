@@ -79,6 +79,22 @@ export const useUserStore = defineStore('user', {
       if (!state.accessUntil) return true
       return new Date(state.accessUntil).getTime() > Date.now()
     },
+    /** Tenía suscripción activa pero ya pasó la fecha de acceso. */
+    accessExpired: (state): boolean => {
+      if (state.subscriptionStatus !== 'active' || !state.accessUntil) return false
+      return new Date(state.accessUntil).getTime() <= Date.now()
+    },
+    /**
+     * Estado real para mostrar en pantalla. El backend deja subscriptionStatus
+     * en 'active' aunque accessUntil ya pasó, así que sin esto la UI dice que
+     * la suscripción sigue viva mientras el guard manda a pagar.
+     */
+    effectiveSubscriptionStatus(state): 'none' | 'pending' | 'active' | 'canceled' | 'expired' {
+      if (state.subscriptionStatus !== 'active' || !state.accessUntil) {
+        return state.subscriptionStatus
+      }
+      return new Date(state.accessUntil).getTime() > Date.now() ? 'active' : 'expired'
+    },
   },
 
   actions: {

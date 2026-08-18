@@ -12,9 +12,14 @@ igual que el backend (`luisa-pita-bejarano-backapp`).
 | Proyecto Vercel | `luisa-pita-bejarano-academy-frontapp` |
 | Team | `proyectos-de-diego` (`team_ZB0eFNsqFQo6bL8QgAMAWUHa`) |
 | Repo | `yeyodev1/luisa-pita-bejarano-academy-frontapp` |
-| Rama de producción | `main` |
-| Flujo | trabajar en `develop` → PR → merge a `main` → deploy automático a producción |
+| Rama por defecto (GitHub) | `develop` — aquí se trabaja y aquí caen los PRs |
+| Rama de producción (Vercel) | `main` — fijada explícitamente en el proyecto |
+| Flujo | commitear en `develop` → deploy de preview automático → PR `develop` → `main` → producción |
 | Env vars | las 7 `VITE_*` cargadas en Production y Preview (gestionar con `vercel env`) |
+| Dominio | `luisapitabejarano.com` + `www` → A `76.76.21.21` / CNAME `cname.vercel-dns.com` (DNS-only en Cloudflare) |
+
+> Cambiar el default de GitHub a `develop` **no** afecta producción: Vercel tiene
+> `productionBranch: main` guardado en el proyecto. Nada se publica hasta que se mergea a `main`.
 
 ## Netlify (legado — NO USAR)
 

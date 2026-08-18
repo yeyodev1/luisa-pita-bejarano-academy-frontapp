@@ -134,7 +134,7 @@ async function changePassword(data: { current: string; new: string }) {
     />
 
     <SubscriptionInfo
-      :subscription-status="userStore.subscriptionStatus"
+      :subscription-status="userStore.effectiveSubscriptionStatus"
       :access-until-label="accessUntilLabel"
       :founding-member="userStore.foundingMember"
     />
