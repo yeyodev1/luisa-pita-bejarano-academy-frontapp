@@ -5,7 +5,7 @@ import { gsap } from '@/composables/useScrollReveal'
 const includes = [
   { num: '01', title: 'Rutinas semanales para mujeres ocupadas', body: 'Guías de entrenamiento progresivo que se adaptan a tu energía y agenda real. Cada semana construyes sobre la anterior, sin empezar de cero.' },
   { num: '02', title: 'Comunidad anual cerrada', body: 'Un círculo de mujeres que avanzan contigo. Sin curiosas, sin ruido. Solo decididas.' },
-  { num: '03', title: 'Plan nutricional flexible', body: 'Un enfoque que se acopla a tu momento de vida. Viajas, celebras, cenas fuera — y sigues avanzando sin culpa ni rigidez.' },
+  { num: '03', title: 'Guía de nutrición', body: 'Un enfoque que se acopla a tu momento de vida. Viajas, celebras, cenas fuera — y sigues avanzando sin culpa ni rigidez.' },
   { num: '04', title: 'Sesiones grupales con Luisa', body: 'Espacios en vivo durante el año para resolver dudas, ajustar tu plan y mantenerte en ruta.' },
   { num: '05', title: 'Retos mensuales medibles', body: 'Pequeñas metas que se acumulan a lo largo de doce meses. Un cuerpo distinto al final del año.' },
   { num: '06', title: 'Acompañamiento cercano', body: 'Luisa y su equipo cerca todo el año. No estás sola — estás dentro de una estructura que te empuja.' },

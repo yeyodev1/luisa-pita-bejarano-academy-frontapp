@@ -82,8 +82,8 @@ function onBoxError(message: string) {
           </div>
           <ul class="plan-card__features">
             <li><i class="fa-solid fa-check" /> Acceso por {{ plan.months }} {{ plan.months === 1 ? 'mes' : 'meses' }}</li>
-            <li><i class="fa-solid fa-check" /> Entrenamientos personalizados</li>
-            <li><i class="fa-solid fa-check" /> Plan nutricional flexible</li>
+            <li><i class="fa-solid fa-check" /> Entrenamientos online</li>
+            <li><i class="fa-solid fa-check" /> Guía de nutrición</li>
             <li><i class="fa-solid fa-check" /> Comunidad privada</li>
           </ul>
           <button
