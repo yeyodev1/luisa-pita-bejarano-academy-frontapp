@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { NuveiSavedCard } from '@/services/paymentService'
+import TermsConsent from '@/components/payments/TermsConsent.vue'
 
 defineProps<{
   amount: number
@@ -12,6 +14,17 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'subscribe'): void
 }>()
+
+const termsAccepted = ref(false)
+const showTermsError = ref(false)
+
+function subscribe() {
+  if (!termsAccepted.value) {
+    showTermsError.value = true
+    return
+  }
+  emit('subscribe')
+}
 </script>
 
 <template>
@@ -39,7 +52,8 @@ const emit = defineEmits<{
       <p v-if="firstChargeLabel" class="monthly__today">
         Hoy pagas <strong>USD 0</strong>. Primer cobro: <strong>{{ firstChargeLabel }}</strong>
       </p>
-      <button class="monthly__btn" type="button" :disabled="loading" @click="emit('subscribe')">
+      <TermsConsent v-model="termsAccepted" :amount="amount" :show-error="showTermsError" />
+      <button class="monthly__btn" type="button" :disabled="loading" @click="subscribe">
         <i :class="loading ? 'fa-solid fa-spinner fa-spin' : 'fa-regular fa-credit-card'" />
         {{
           loading
@@ -128,6 +142,7 @@ const emit = defineEmits<{
   align-items: stretch;
   gap: 0.6rem;
   min-width: 260px;
+  max-width: 420px;
 }
 
 .monthly__price {
