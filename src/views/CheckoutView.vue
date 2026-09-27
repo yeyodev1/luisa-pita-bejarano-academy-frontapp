@@ -350,6 +350,39 @@ onMounted(() => {
   }
 }
 
+// En celular el resumen se compacta para que el formulario se vea sin bajar.
+@media (max-width: 880px) {
+  .checkout__summary {
+    gap: 0.5rem;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .checkout__brand {
+    margin-bottom: 0.5rem;
+  }
+
+  .checkout__title {
+    font-size: 1.35rem;
+  }
+
+  .checkout__price strong {
+    font-size: 2.4rem;
+  }
+
+  .checkout__features {
+    display: none;
+  }
+
+  .checkout__secure {
+    margin-top: 0;
+    padding-top: 0.25rem;
+  }
+
+  .checkout__panel {
+    padding: 1.5rem 1.25rem 2.5rem;
+  }
+}
+
 .checkout__panel {
   display: flex;
   flex-direction: column;
