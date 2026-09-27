@@ -11,6 +11,7 @@ import {
   type NuveiTokenizeResponse,
 } from '@/utils/nuveiSdk'
 import BrandWordmark from '@/components/ui/BrandWordmark.vue'
+import SecureCardFrame from '@/components/payments/SecureCardFrame.vue'
 import { saveCheckoutDone } from '@/utils/checkoutDone'
 
 /**
@@ -263,24 +264,33 @@ onMounted(() => {
           <button type="button" :disabled="step === 'processing'" @click="editDetails">Cambiar</button>
         </div>
 
-        <div v-show="step === 'card' || step === 'processing'">
+        <div v-show="step === 'card' || step === 'processing'" class="checkout__card-step">
           <h2 class="checkout__heading">Datos de tu tarjeta</h2>
-          <div class="checkout__card-wrap">
-            <div id="checkout-card-form" class="checkout__card-form" />
-            <div v-if="step === 'processing'" class="checkout__processing" role="status">
-              <i class="fa-solid fa-spinner fa-spin" />
-              <strong>Procesando tu pago con Nuvei…</strong>
-              <span>Puede tardar hasta 30 segundos. No cierres ni recargues esta ventana.</span>
-            </div>
-          </div>
+          <SecureCardFrame
+            container-id="checkout-card-form"
+            :environment="checkout?.environment"
+            :processing="step === 'processing'"
+          />
           <p v-if="cardHint" class="checkout__error">{{ cardHint }}</p>
+
+          <dl class="checkout__total">
+            <div>
+              <dt>Suscripción mensual</dt>
+              <dd>USD {{ amount.toFixed(2) }} / mes</dd>
+            </div>
+            <div class="checkout__total-today">
+              <dt>Total a pagar hoy</dt>
+              <dd>USD {{ amount.toFixed(2) }}</dd>
+            </div>
+            <p>IVA incluido · Se renueva cada mes · Cancelas cuando quieras</p>
+          </dl>
+
           <button class="checkout__btn" type="button" :disabled="step === 'processing'" @click="pay">
-            <i v-if="step === 'processing'" class="fa-solid fa-spinner fa-spin" />
-            {{ step === 'processing' ? 'Procesando pago…' : `Pagar USD ${amount} y suscribirme` }}
+            <i :class="step === 'processing' ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-lock'" />
+            {{ step === 'processing' ? 'Procesando pago…' : `Pagar USD ${amount.toFixed(2)} de forma segura` }}
           </button>
           <p class="checkout__fine">
-            Se cobrarán USD {{ amount }} hoy y luego cada mes, hasta que canceles. Si este correo ya tiene acceso
-            pagado, hoy no se cobra nada: el primer cobro será cuando venza tu acceso.
+            Si este correo ya tiene acceso pagado, hoy no se cobra nada: el primer cobro será cuando venza tu acceso.
           </p>
         </div>
 
@@ -569,47 +579,51 @@ onMounted(() => {
   }
 }
 
-.checkout__card-form {
-  min-height: 190px;
-  margin: 1rem 0;
-  padding: 1rem;
-  background: $lpb-white;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-}
-
-.checkout__card-wrap {
-  position: relative;
-}
-
-.checkout__processing {
-  position: absolute;
-  inset: 1rem 0;
+.checkout__card-step {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  text-align: center;
-  background: rgba($lpb-white, 0.96);
+  gap: 1rem;
+}
+
+.checkout__total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
+  border-radius: 0.85rem;
+  background: $lpb-white;
   font-family: $font-sans;
-  color: $lpb-graphite;
 
-  i {
-    font-size: 1.6rem;
-    color: $lpb-green-deep;
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: $lpb-graphite;
   }
 
-  strong {
-    color: $lpb-black;
-    font-size: 1rem;
+  dt,
+  dd {
+    margin: 0;
   }
 
-  span {
-    font-size: 0.85rem;
+  p {
+    margin: 0.2rem 0 0;
+    font-size: 0.78rem;
+    color: $lpb-muted;
+  }
+}
+
+.checkout__total-today {
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+  font-weight: 700;
+  color: $lpb-black !important;
+
+  dd {
+    font-size: 1.05rem;
   }
 }
 

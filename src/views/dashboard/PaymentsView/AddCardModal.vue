@@ -8,6 +8,7 @@ import {
   type NuveiPaymentGateway,
   type NuveiTokenizeResponse,
 } from '@/utils/nuveiSdk'
+import SecureCardFrame from '@/components/payments/SecureCardFrame.vue'
 
 /**
  * Agregar una tarjeta (Nuvei). El formulario lo pinta el SDK de Nuvei dentro
@@ -34,6 +35,7 @@ const error = ref('')
 const formHint = ref('')
 const otp = ref('')
 const pendingCard = ref<{ token: string; transactionId: string } | null>(null)
+const environment = ref<'stg' | 'prod' | null>(null)
 let gateway: NuveiPaymentGateway | null = null
 
 async function setup() {
@@ -48,6 +50,7 @@ async function setup() {
       loadNuveiSdk(),
     ])
     const config = data.data
+    environment.value = config.environment
     if (!config.enabled || !config.appCode || !config.appKey) {
       throw new Error('El pago con tarjeta aún no está disponible.')
     }
@@ -159,11 +162,13 @@ watch(
           </div>
 
           <div v-show="step === 'form' || step === 'processing'" class="card-modal__body">
-            <div id="nuvei-card-form" class="card-modal__form" />
+            <SecureCardFrame
+              container-id="nuvei-card-form"
+              :environment="environment"
+              :processing="step === 'processing'"
+              processing-text="Guardando tu tarjeta con Nuvei…"
+            />
             <p v-if="formHint" class="card-modal__hint card-modal__hint--error">{{ formHint }}</p>
-            <p class="card-modal__hint">
-              Tus datos de tarjeta los procesa Nuvei; nosotros no guardamos el número ni el código de seguridad.
-            </p>
             <button class="card-modal__btn" type="button" :disabled="step === 'processing'" @click="submitCard">
               <i v-if="step === 'processing'" class="fa-solid fa-spinner fa-spin" />
               {{ step === 'processing' ? 'Procesando…' : submitLabel || 'Guardar tarjeta' }}
