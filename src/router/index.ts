@@ -56,6 +56,20 @@ const routes: RouteRecordRaw[] = [
     } satisfies RouteMeta,
   },
   {
+    path: '/terminos-y-condiciones',
+    name: 'terms',
+    component: () => import('@/views/TermsView.vue'),
+    meta: {
+      title: 'Términos y condiciones | Luisa Pita Bejarano',
+      description: 'Términos de la suscripción mensual a la comunidad, cancelación y política de reembolso.',
+      canonical: `${SITE}/terminos-y-condiciones`,
+      ogTitle: 'Términos y condiciones | Luisa Pita Bejarano',
+      ogDescription: 'Términos de la suscripción mensual a la comunidad, cancelación y política de reembolso.',
+      ogUrl: `${SITE}/terminos-y-condiciones`,
+      ogImage: OG_IMAGE,
+    } satisfies RouteMeta,
+  },
+  {
     path: '/aviso-legal',
     name: 'legal-notice',
     component: () => import('@/views/LegalNoticeView.vue'),
