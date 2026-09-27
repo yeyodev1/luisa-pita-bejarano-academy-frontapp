@@ -85,6 +85,22 @@ export function loadNuveiSdk(): Promise<PaymentGatewayCtor> {
   return loading
 }
 
+/** Mensajes del SDK de Nuvei (vienen en inglés) traducidos para la alumna. */
+const SDK_MESSAGES: Array<[RegExp, string]> = [
+  [/invalid card data/i, 'Revisa los datos de la tarjeta: número, vencimiento (MM / AA) y CVC.'],
+  [/invalid card number|card number/i, 'El número de tarjeta no es válido.'],
+  [/expir/i, 'Revisa la fecha de vencimiento (MM / AA).'],
+  [/cvc|cvv/i, 'Revisa el código de seguridad (CVC).'],
+  [/not completed|incomplete|required/i, 'Completa todos los datos de la tarjeta.'],
+  [/rejected|declined/i, 'La tarjeta fue rechazada. Prueba con otra tarjeta.'],
+]
+
+export function nuveiMessageEs(message: string | null | undefined, fallback: string): string {
+  if (!message) return fallback
+  const match = SDK_MESSAGES.find(([pattern]) => pattern.test(message))
+  return match ? match[1] : message
+}
+
 /**
  * Si la tarjeta ya estaba guardada, Nuvei responde con un error que trae el
  * token existente ("Card already added: 2508629432271853872"). Lo reutilizamos.

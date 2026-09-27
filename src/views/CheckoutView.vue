@@ -5,6 +5,7 @@ import { useUserStore } from '@/stores/user'
 import { paymentService, type NuveiGuestCheckout } from '@/services/paymentService'
 import {
   loadNuveiSdk,
+  nuveiMessageEs,
   tokenFromAlreadyAddedError,
   type NuveiPaymentGateway,
   type NuveiTokenizeResponse,
@@ -66,7 +67,7 @@ async function startCheckout() {
       '#checkout-card-form',
       onTokenized,
       (message) => {
-        cardHint.value = message || 'Completa los datos de la tarjeta.'
+        cardHint.value = nuveiMessageEs(message, 'Completa los datos de la tarjeta.')
         step.value = 'card'
       },
     )
@@ -91,7 +92,7 @@ async function onTokenized(response: NuveiTokenizeResponse) {
   if (reused) return complete(reused)
 
   if (response.error || !response.card?.token) {
-    cardHint.value = response.error?.type || 'No pudimos procesar la tarjeta. Revisa los datos.'
+    cardHint.value = nuveiMessageEs(response.error?.type, 'No pudimos procesar la tarjeta. Revisa los datos.')
     step.value = 'card'
     return
   }
@@ -109,7 +110,7 @@ async function onTokenized(response: NuveiTokenizeResponse) {
   cardHint.value =
     card.status === 'review'
       ? 'Tu tarjeta quedó en revisión por seguridad. Prueba con otra tarjeta o escríbenos.'
-      : card.message || 'La tarjeta fue rechazada. Prueba con otra tarjeta.'
+      : nuveiMessageEs(card.message, 'La tarjeta fue rechazada. Prueba con otra tarjeta.')
   step.value = 'card'
 }
 
@@ -231,7 +232,14 @@ onMounted(() => {
 
         <div v-show="step === 'card' || step === 'processing'">
           <h2 class="checkout__heading">Datos de tu tarjeta</h2>
-          <div id="checkout-card-form" class="checkout__card-form" />
+          <div class="checkout__card-wrap">
+            <div id="checkout-card-form" class="checkout__card-form" />
+            <div v-if="step === 'processing'" class="checkout__processing" role="status">
+              <i class="fa-solid fa-spinner fa-spin" />
+              <strong>Procesando tu pago con Nuvei…</strong>
+              <span>Puede tardar hasta 30 segundos. No cierres ni recargues esta ventana.</span>
+            </div>
+          </div>
           <p v-if="cardHint" class="checkout__error">{{ cardHint }}</p>
           <button class="checkout__btn" type="button" :disabled="step === 'processing'" @click="pay">
             <i v-if="step === 'processing'" class="fa-solid fa-spinner fa-spin" />
@@ -532,6 +540,41 @@ onMounted(() => {
   background: $lpb-white;
   border: 1px solid var(--border);
   border-radius: 1rem;
+}
+
+.checkout__card-wrap {
+  position: relative;
+}
+
+.checkout__processing {
+  position: absolute;
+  inset: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: rgba($lpb-white, 0.96);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  font-family: $font-sans;
+  color: $lpb-graphite;
+
+  i {
+    font-size: 1.6rem;
+    color: $lpb-green-deep;
+  }
+
+  strong {
+    color: $lpb-black;
+    font-size: 1rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+  }
 }
 
 .checkout__otp-input {

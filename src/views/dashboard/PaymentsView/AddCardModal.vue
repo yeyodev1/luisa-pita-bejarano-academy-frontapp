@@ -3,6 +3,7 @@ import { nextTick, ref, watch } from 'vue'
 import { paymentService, type NuveiChargeResult, type NuveiSavedCard } from '@/services/paymentService'
 import {
   loadNuveiSdk,
+  nuveiMessageEs,
   tokenFromAlreadyAddedError,
   type NuveiPaymentGateway,
   type NuveiTokenizeResponse,
@@ -58,7 +59,7 @@ async function setup() {
       '#nuvei-card-form',
       onTokenized,
       (message) => {
-        formHint.value = message || 'Completa los datos de la tarjeta.'
+        formHint.value = nuveiMessageEs(message, 'Completa los datos de la tarjeta.')
         if (step.value === 'processing') step.value = 'form'
       },
     )
@@ -80,7 +81,7 @@ async function onTokenized(response: NuveiTokenizeResponse) {
   if (reused) return save(reused)
 
   if (response.error || !response.card?.token) {
-    formHint.value = response.error?.type || 'Nuvei no pudo guardar la tarjeta. Revisa los datos.'
+    formHint.value = nuveiMessageEs(response.error?.type, 'Nuvei no pudo guardar la tarjeta. Revisa los datos.')
     step.value = 'form'
     return
   }
@@ -97,7 +98,7 @@ async function onTokenized(response: NuveiTokenizeResponse) {
   error.value =
     card.status === 'review'
       ? 'Tu tarjeta quedó en revisión por seguridad. Intenta con otra tarjeta o escríbenos.'
-      : card.message || 'La tarjeta fue rechazada. Intenta con otra tarjeta.'
+      : nuveiMessageEs(card.message, 'La tarjeta fue rechazada. Intenta con otra tarjeta.')
   step.value = 'error'
 }
 
