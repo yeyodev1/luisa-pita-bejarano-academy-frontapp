@@ -63,8 +63,22 @@ export interface NuveiSubscription {
   createdAt: string
 }
 
+export interface NuveiSavedCard {
+  token: string
+  brand: string | null
+  last4: string | null
+  bin: string | null
+  expiryMonth: string | null
+  expiryYear: string | null
+  holderName: string | null
+  status: 'valid' | 'review' | 'pending' | 'rejected' | string | null
+  isDefault: boolean
+}
+
 export interface NuveiCheckoutConfig {
   enabled: boolean
+  plan: PaymentPlan
+  amount: number
   environment: 'stg' | 'prod'
   appCode: string | null
   appKey: string | null
@@ -163,18 +177,6 @@ class PaymentService extends APIBase {
     return (await this.nuveiHealth()).enabled
   }
 
-  async createNuveiLink(payload: {
-    email: string
-    name: string
-    lastName: string
-    plan: PaymentPlan
-  }) {
-    return this.post<ApiResponse<NuveiLinkResponse>>('payments/nuvei/create-link', {
-      ...payload,
-      origin: window.location.origin,
-    })
-  }
-
   async nuveiStatus(devReference: string) {
     return this.get<ApiResponse<NuveiStatusResponse>>(`payments/nuvei/status/${devReference}`)
   }
@@ -192,22 +194,44 @@ class PaymentService extends APIBase {
     return this.post<ApiResponse<{ verified: boolean }>>('payments/nuvei/card/verify', { transactionId, otp })
   }
 
-  async subscribe(plan: PaymentPlan, cardToken: string) {
-    return this.post<ApiResponse<{ charge: NuveiChargeResult; subscription: NuveiSubscription | null }>>(
+  /** Suscripción mensual. Sin cardToken se cobra a la tarjeta principal. */
+  async subscribe(cardToken?: string) {
+    return this.post<ApiResponse<{
+      charge: NuveiChargeResult | null
+      /** Si ya tenía acceso pagado, no se cobra hoy: el primer cobro es esta fecha. */
+      firstChargeAt: string | null
+      subscription: NuveiSubscription | null
+    }>>(
       'payments/nuvei/subscription',
-      { plan, cardToken },
+      { cardToken },
       undefined,
       { timeout: CHARGE_TIMEOUT },
     )
   }
 
-  async updateSubscriptionCard(cardToken: string) {
-    return this.post<ApiResponse<{ charge: NuveiChargeResult | null; subscription: NuveiSubscription | null }>>(
-      'payments/nuvei/subscription/card',
-      { cardToken },
+  async listCards() {
+    return this.get<ApiResponse<{ cards: NuveiSavedCard[] }>>('payments/nuvei/cards')
+  }
+
+  async saveCard(cardToken: string, makeDefault = false) {
+    return this.post<ApiResponse<{ cards: NuveiSavedCard[]; charge: NuveiChargeResult | null }>>(
+      'payments/nuvei/cards',
+      { cardToken, makeDefault },
       undefined,
       { timeout: CHARGE_TIMEOUT },
     )
+  }
+
+  async setDefaultCard(cardToken: string) {
+    return this.post<ApiResponse<{
+      cards: NuveiSavedCard[]
+      charge: NuveiChargeResult | null
+      subscription: NuveiSubscription | null
+    }>>(`payments/nuvei/cards/${encodeURIComponent(cardToken)}/default`, {}, undefined, { timeout: CHARGE_TIMEOUT })
+  }
+
+  async removeCard(cardToken: string) {
+    return this.delete<ApiResponse<{ cards: NuveiSavedCard[] }>>(`payments/nuvei/cards/${encodeURIComponent(cardToken)}`)
   }
 }
 

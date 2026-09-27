@@ -1,32 +1,29 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
-import {
-  paymentService,
-  type NuveiChargeResult,
-  type NuveiSubscription,
-} from '@/services/paymentService'
+import { nextTick, ref, watch } from 'vue'
+import { paymentService, type NuveiChargeResult, type NuveiSavedCard } from '@/services/paymentService'
 import {
   loadNuveiSdk,
   tokenFromAlreadyAddedError,
   type NuveiPaymentGateway,
   type NuveiTokenizeResponse,
 } from '@/utils/nuveiSdk'
-import { getPaymentPlan, type PaymentPlan } from '@/constants/paymentPlans'
 
 /**
- * Suscripción con tarjeta guardada (Nuvei Recurrencia). El formulario lo pinta
- * el SDK de Nuvei dentro de #nuvei-card-form; nosotros solo recibimos el token.
- * mode "update-card" reemplaza la tarjeta de una suscripción existente.
+ * Agregar una tarjeta (Nuvei). El formulario lo pinta el SDK de Nuvei dentro
+ * de #nuvei-card-form; el número nunca pasa por nuestro servidor, solo el token.
+ * Si el banco pide OTP, se verifica antes de guardarla.
  */
 const props = defineProps<{
   open: boolean
-  plan: PaymentPlan | null
-  mode: 'subscribe' | 'update-card'
+  /** Dejarla como principal (la usan los cobros de la suscripción). */
+  makeDefault: boolean
+  /** Texto del botón final, p. ej. "Guardar y suscribirme". */
+  submitLabel?: string
 }>()
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'done', payload: { charge: NuveiChargeResult | null; subscription: NuveiSubscription | null }): void
+  (e: 'saved', payload: { cards: NuveiSavedCard[]; charge: NuveiChargeResult | null; token: string }): void
 }>()
 
 type Step = 'loading' | 'form' | 'otp' | 'processing' | 'error'
@@ -37,9 +34,6 @@ const formHint = ref('')
 const otp = ref('')
 const pendingCard = ref<{ token: string; transactionId: string } | null>(null)
 let gateway: NuveiPaymentGateway | null = null
-
-const planInfo = computed(() => (props.plan ? getPaymentPlan(props.plan) : null))
-const title = computed(() => (props.mode === 'update-card' ? 'Cambiar tarjeta' : 'Suscripción automática'))
 
 async function setup() {
   step.value = 'loading'
@@ -54,17 +48,13 @@ async function setup() {
     ])
     const config = data.data
     if (!config.enabled || !config.appCode || !config.appKey) {
-      throw new Error('Las suscripciones con tarjeta aún no están disponibles.')
+      throw new Error('El pago con tarjeta aún no está disponible.')
     }
     step.value = 'form'
     await nextTick()
     gateway = new PaymentGateway(config.environment, config.appCode, config.appKey)
     gateway.generate_tokenize(
-      {
-        locale: 'es',
-        user: config.user,
-        configuration: { default_country: 'ECU' },
-      },
+      { locale: 'es', user: config.user, configuration: { default_country: 'ECU' } },
       '#nuvei-card-form',
       onTokenized,
       (message) => {
@@ -73,7 +63,7 @@ async function setup() {
       },
     )
   } catch (err: unknown) {
-    error.value = (err as { message?: string }).message || 'No se pudo cargar el formulario de pago.'
+    error.value = (err as { message?: string }).message || 'No se pudo cargar el formulario de tarjeta.'
     step.value = 'error'
   }
 }
@@ -87,7 +77,7 @@ function submitCard() {
 
 async function onTokenized(response: NuveiTokenizeResponse) {
   const reused = tokenFromAlreadyAddedError(response)
-  if (reused) return finish(reused)
+  if (reused) return save(reused)
 
   if (response.error || !response.card?.token) {
     formHint.value = response.error?.type || 'Nuvei no pudo guardar la tarjeta. Revisa los datos.'
@@ -96,7 +86,7 @@ async function onTokenized(response: NuveiTokenizeResponse) {
   }
 
   const card = response.card
-  if (card.status === 'valid') return finish(card.token!)
+  if (card.status === 'valid') return save(card.token!)
 
   if (card.status === 'pending' && card.transaction_reference) {
     pendingCard.value = { token: card.token!, transactionId: card.transaction_reference }
@@ -116,32 +106,20 @@ async function submitOtp() {
   step.value = 'processing'
   try {
     await paymentService.verifyCard(pendingCard.value.transactionId, otp.value.trim())
-    await finish(pendingCard.value.token)
+    await save(pendingCard.value.token)
   } catch (err: unknown) {
     formHint.value = (err as { message?: string }).message || 'El código no es válido.'
     step.value = 'otp'
   }
 }
 
-async function finish(cardToken: string) {
+async function save(cardToken: string) {
   step.value = 'processing'
   try {
-    if (props.mode === 'update-card') {
-      const { data } = await paymentService.updateSubscriptionCard(cardToken)
-      emit('done', data.data)
-      return
-    }
-    if (!props.plan) throw new Error('Elige un plan')
-    const { data } = await paymentService.subscribe(props.plan, cardToken)
-    const { charge } = data.data
-    if (charge.status === 'failed') {
-      error.value = charge.message || 'La tarjeta fue rechazada. Prueba con otra tarjeta.'
-      step.value = 'error'
-      return
-    }
-    emit('done', data.data)
+    const { data } = await paymentService.saveCard(cardToken, props.makeDefault)
+    emit('saved', { ...data.data, token: cardToken })
   } catch (err: unknown) {
-    error.value = (err as { message?: string }).message || 'No se pudo completar la suscripción.'
+    error.value = (err as { message?: string }).message || 'No se pudo guardar la tarjeta.'
     step.value = 'error'
   }
 }
@@ -167,11 +145,8 @@ watch(
         <div class="card-modal__panel">
           <header class="card-modal__header">
             <div>
-              <h2 class="card-modal__title">{{ title }}</h2>
-              <p v-if="planInfo && mode === 'subscribe'" class="card-modal__subtitle">
-                {{ planInfo.label }} · USD {{ planInfo.price }} cada
-                {{ planInfo.months === 1 ? 'mes' : `${planInfo.months} meses` }}
-              </p>
+              <h2 class="card-modal__title">Agregar tarjeta</h2>
+              <p class="card-modal__subtitle">Crédito o débito. Procesado de forma segura por Nuvei.</p>
             </div>
             <button class="card-modal__close" type="button" aria-label="Cerrar" :disabled="step === 'processing'" @click="close">
               <i class="fa-solid fa-xmark" />
@@ -185,13 +160,12 @@ watch(
           <div v-show="step === 'form' || step === 'processing'" class="card-modal__body">
             <div id="nuvei-card-form" class="card-modal__form" />
             <p v-if="formHint" class="card-modal__hint card-modal__hint--error">{{ formHint }}</p>
-            <p v-if="mode === 'subscribe'" class="card-modal__hint">
-              Cobraremos USD {{ planInfo?.price }} hoy y se renovará automáticamente. Puedes cancelar cuando quieras
-              desde esta página. Tus datos de tarjeta los procesa Nuvei; nosotros no los guardamos.
+            <p class="card-modal__hint">
+              Tus datos de tarjeta los procesa Nuvei; nosotros no guardamos el número ni el código de seguridad.
             </p>
             <button class="card-modal__btn" type="button" :disabled="step === 'processing'" @click="submitCard">
               <i v-if="step === 'processing'" class="fa-solid fa-spinner fa-spin" />
-              {{ step === 'processing' ? 'Procesando…' : mode === 'update-card' ? 'Guardar tarjeta' : `Suscribirme y pagar USD ${planInfo?.price}` }}
+              {{ step === 'processing' ? 'Procesando…' : submitLabel || 'Guardar tarjeta' }}
             </button>
           </div>
 

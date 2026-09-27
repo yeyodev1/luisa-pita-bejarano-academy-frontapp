@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { paymentService } from '@/services/paymentService'
 import type { PaymentBoxConfig } from '@/services/paymentService'
 import { PAYMENT_PLANS, getPaymentPlan, type PaymentPlan } from '@/constants/paymentPlans'
@@ -11,6 +13,32 @@ const showModal = ref(false)
 const selectedPlan = ref<PaymentPlan>('annual')
 const boxConfig = ref<PaymentBoxConfig | null>(null)
 const selectedPlanDetails = computed(() => getPaymentPlan(selectedPlan.value))
+
+/**
+ * Con Nuvei activo el único producto es la suscripción mensual con tarjeta
+ * guardada, que se activa con cuenta desde Pagos. Si no, se venden los planes
+ * de pago único con PayPhone como antes.
+ */
+const router = useRouter()
+const userStore = useUserStore()
+const monthlyOnly = ref(false)
+const monthly = getPaymentPlan('monthly')
+
+onMounted(async () => {
+  monthlyOnly.value = (await paymentService.nuveiHealth()).subscriptionsEnabled
+})
+
+function startSubscription() {
+  if (typeof fbq !== 'undefined') {
+    fbq('track', 'AddToCart', {
+      content_name: 'Academia Luisa Pita Bejarano',
+      content_type: 'product',
+      value: monthly.price,
+      currency: 'USD',
+    })
+  }
+  router.push({ name: userStore.isAuthenticated ? 'payments' : 'register' })
+}
 
 function openCheckout(plan: PaymentPlan) {
   selectedPlan.value = plan
@@ -65,7 +93,34 @@ function onBoxError(message: string) {
         Todos los planes incluyen acceso completo a la academia. Elige el tiempo que mejor acompañe tu proceso.
       </p>
 
-      <div class="plans__grid">
+      <div v-if="monthlyOnly" class="plans__grid plans__grid--single">
+        <article class="plan-card plan-card--featured">
+          <div class="plan-card__badge">Suscripción mensual</div>
+          <h3 class="plan-card__name">Acceso completo</h3>
+          <p class="plan-card__description">
+            Se renueva automáticamente cada mes con tu tarjeta. Cancelas cuando quieras.
+          </p>
+          <div class="plan-card__price">
+            <span class="plan-card__currency">$</span>
+            <span class="plan-card__amount">{{ monthly.price }}</span>
+            <span class="plan-card__period">al mes</span>
+          </div>
+          <ul class="plan-card__features">
+            <li><i class="fa-solid fa-check" /> Academia completa</li>
+            <li><i class="fa-solid fa-check" /> Entrenamientos online</li>
+            <li><i class="fa-solid fa-check" /> Guía de nutrición</li>
+            <li><i class="fa-solid fa-check" /> Comunidad privada</li>
+          </ul>
+          <button type="button" class="plan-card__button plan-card__button--primary" @click="startSubscription">
+            {{ userStore.isAuthenticated ? 'Activar mi suscripción' : 'Crear mi cuenta y suscribirme' }}
+          </button>
+          <RouterLink v-if="!userStore.isAuthenticated" :to="{ name: 'login' }" class="plan-card__login">
+            Ya tengo cuenta
+          </RouterLink>
+        </article>
+      </div>
+
+      <div v-else class="plans__grid">
         <article
           v-for="plan in PAYMENT_PLANS"
           :key="plan.id"
@@ -129,6 +184,24 @@ function onBoxError(message: string) {
 .plans__title {
   margin: 0.75rem 0 0;
   color: $lpb-black;
+}
+
+.plans__grid--single {
+  justify-content: center;
+
+  .plan-card {
+    flex: 1 1 320px;
+    max-width: 420px;
+  }
+}
+
+.plan-card__login {
+  display: block;
+  margin-top: 0.85rem;
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  color: $lpb-graphite;
+  text-decoration: underline;
 }
 
 .plans__lede {
