@@ -45,16 +45,21 @@ export interface NuveiPaymentGateway {
 
 type PaymentGatewayCtor = new (environment: string, appCode: string, appKey: string) => NuveiPaymentGateway
 
-declare global {
-  interface Window {
-    PaymentGateway?: PaymentGatewayCtor
-  }
-}
-
 let loading: Promise<PaymentGatewayCtor> | null = null
 
+/**
+ * El SDK declara `class PaymentGateway` en el ámbito global del script: existe
+ * como identificador global pero NO como window.PaymentGateway. Se lee así.
+ */
+function globalPaymentGateway(): PaymentGatewayCtor | undefined {
+  return new Function('return typeof PaymentGateway === "undefined" ? undefined : PaymentGateway')() as
+    | PaymentGatewayCtor
+    | undefined
+}
+
 export function loadNuveiSdk(): Promise<PaymentGatewayCtor> {
-  if (window.PaymentGateway) return Promise.resolve(window.PaymentGateway)
+  const ready = globalPaymentGateway()
+  if (ready) return Promise.resolve(ready)
   if (loading) return loading
 
   loading = new Promise((resolve, reject) => {
@@ -63,8 +68,13 @@ export function loadNuveiSdk(): Promise<PaymentGatewayCtor> {
     script.charset = 'UTF-8'
     script.async = true
     script.onload = () => {
-      if (window.PaymentGateway) resolve(window.PaymentGateway)
-      else reject(new Error('El formulario de pago de Nuvei no cargó correctamente.'))
+      const ctor = globalPaymentGateway()
+      if (ctor) {
+        resolve(ctor)
+      } else {
+        loading = null
+        reject(new Error('El formulario de pago de Nuvei no cargó correctamente.'))
+      }
     }
     script.onerror = () => {
       loading = null
