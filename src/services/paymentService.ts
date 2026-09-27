@@ -87,7 +87,7 @@ export interface NuveiCheckoutConfig {
 }
 
 export interface NuveiChargeResult {
-  status: 'approved' | 'pending' | 'failed' | 'duplicate' | 'locked'
+  status: 'approved' | 'pending' | 'failed' | 'duplicate' | 'locked' | 'otp_required'
   paymentId?: string
   transactionId?: string
   message?: string
@@ -103,7 +103,9 @@ export interface NuveiGuestCheckout {
 }
 
 export interface NuveiGuestCheckoutResult {
-  status: 'approved' | 'pending' | 'scheduled' | 'failed'
+  /** otp_required: el banco pidió un código para confirmar el cobro (ver paymentId). */
+  status: 'approved' | 'pending' | 'scheduled' | 'failed' | 'otp_required'
+  paymentId?: string
   email?: string
   /** Solo si ya tenía acceso pagado: hoy no se cobró y el primer cobro es esta fecha. */
   firstChargeAt?: string | null
@@ -243,6 +245,25 @@ class PaymentService extends APIBase {
     return this.post<ApiResponse<NuveiGuestCheckoutResult>>(
       'payments/nuvei/checkout/complete',
       { checkoutToken, cardToken },
+      undefined,
+      { timeout: CHARGE_TIMEOUT },
+    )
+  }
+
+  async checkoutVerifyChargeOtp(checkoutToken: string, paymentId: string, otp: string) {
+    return this.post<ApiResponse<NuveiGuestCheckoutResult>>(
+      'payments/nuvei/checkout/charge/verify',
+      { checkoutToken, paymentId, otp },
+      undefined,
+      { timeout: CHARGE_TIMEOUT },
+    )
+  }
+
+  /** Confirma con el código del banco un cobro de suscripción (alumna con sesión). */
+  async verifyChargeOtp(paymentId: string, otp: string) {
+    return this.post<ApiResponse<{ charge: NuveiChargeResult; subscription: NuveiSubscription | null }>>(
+      'payments/nuvei/subscription/verify-otp',
+      { paymentId, otp },
       undefined,
       { timeout: CHARGE_TIMEOUT },
     )

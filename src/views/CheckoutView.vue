@@ -30,6 +30,8 @@ const existingAccount = ref(false)
 const cardHint = ref('')
 const otp = ref('')
 const pendingCard = ref<{ token: string; transactionId: string } | null>(null)
+/** Cobro esperando el código del banco (Diners, por ejemplo). */
+const pendingChargeId = ref<string | null>(null)
 const checkout = ref<NuveiGuestCheckout | null>(null)
 const submitting = ref(false)
 let gateway: NuveiPaymentGateway | null = null
@@ -115,7 +117,9 @@ async function onTokenized(response: NuveiTokenizeResponse) {
 }
 
 async function submitOtp() {
-  if (!checkout.value || !pendingCard.value || !otp.value.trim()) return
+  if (!checkout.value || !otp.value.trim()) return
+  if (pendingChargeId.value) return submitChargeOtp()
+  if (!pendingCard.value) return
   step.value = 'processing'
   try {
     await paymentService.checkoutVerifyCard(
@@ -130,20 +134,49 @@ async function submitOtp() {
   }
 }
 
+async function submitChargeOtp() {
+  if (!checkout.value || !pendingChargeId.value) return
+  step.value = 'processing'
+  try {
+    const { data } = await paymentService.checkoutVerifyChargeOtp(
+      checkout.value.checkoutToken,
+      pendingChargeId.value,
+      otp.value.trim(),
+    )
+    finish(data.data)
+  } catch (err: unknown) {
+    cardHint.value = errorMessage(err, 'El código no es correcto.')
+    otp.value = ''
+    step.value = 'otp'
+  }
+}
+
+function finish(result: Awaited<ReturnType<typeof paymentService.checkoutComplete>>['data']['data']) {
+  if (result.status === 'otp_required' && result.paymentId) {
+    pendingChargeId.value = result.paymentId
+    pendingCard.value = null
+    otp.value = ''
+    cardHint.value = ''
+    step.value = 'otp'
+    return
+  }
+  if (result.status === 'failed' || result.status === 'otp_required') {
+    pendingChargeId.value = null
+    cardHint.value = result.message || 'La tarjeta fue rechazada. Prueba con otra tarjeta.'
+    step.value = 'card'
+    return
+  }
+  const email = result.email || form.value.email.trim()
+  saveCheckoutDone({ email, status: result.status, firstChargeAt: result.firstChargeAt ?? null })
+  router.replace({ name: 'subscription-welcome', query: { email } })
+}
+
 async function complete(cardToken: string) {
   if (!checkout.value) return
   step.value = 'processing'
   try {
     const { data } = await paymentService.checkoutComplete(checkout.value.checkoutToken, cardToken)
-    const result = data.data
-    if (result.status === 'failed') {
-      cardHint.value = result.message || 'La tarjeta fue rechazada. Prueba con otra tarjeta.'
-      step.value = 'card'
-      return
-    }
-    const email = result.email || form.value.email.trim()
-    saveCheckoutDone({ email, status: result.status, firstChargeAt: result.firstChargeAt ?? null })
-    router.replace({ name: 'subscription-welcome', query: { email } })
+    finish(data.data)
   } catch (err: unknown) {
     const e = err as { status?: number }
     if (e.status === 401) {
@@ -252,8 +285,11 @@ onMounted(() => {
         </div>
 
         <form v-if="step === 'otp'" class="checkout__otp" @submit.prevent="submitOtp">
-          <h2 class="checkout__heading">Confirma tu tarjeta</h2>
-          <p class="checkout__lede">Tu banco te envió un código por SMS o correo. Ingrésalo para continuar.</p>
+          <h2 class="checkout__heading">{{ pendingChargeId ? 'Confirma tu pago' : 'Confirma tu tarjeta' }}</h2>
+          <p class="checkout__lede">
+            Tu banco te envió un código por SMS o correo. Ingrésalo para
+            {{ pendingChargeId ? 'confirmar el pago de tu suscripción' : 'continuar' }}.
+          </p>
           <input
             v-model="otp"
             class="checkout__otp-input"

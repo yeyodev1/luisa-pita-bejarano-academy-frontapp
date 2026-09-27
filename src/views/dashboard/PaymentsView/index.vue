@@ -20,6 +20,7 @@ import MonthlySubscriptionCard from './MonthlySubscriptionCard.vue'
 import CardsSection from './CardsSection.vue'
 import AddCardModal from './AddCardModal.vue'
 import PaymentChangeNotice from './PaymentChangeNotice.vue'
+import ChargeOtpModal from './ChargeOtpModal.vue'
 import type { PaymentItem } from './PaymentHistory.vue'
 import { paymentPlanLabel, type PaymentPlan } from '@/constants/paymentPlans'
 
@@ -51,6 +52,8 @@ const subscribing = ref(false)
 const addCard = ref<{ open: boolean; thenSubscribe: boolean }>({ open: false, thenSubscribe: false })
 const showConfirmSubscribe = ref(false)
 const removeTarget = ref<NuveiSavedCard | null>(null)
+/** Cobro esperando el código (OTP) del banco. */
+const otpPaymentId = ref<string | null>(null)
 
 /** Suscripción que todavía cobra (activa o con un cobro fallido en reintento). */
 const liveSubscription = computed(() =>
@@ -196,6 +199,8 @@ async function loadNuvei() {
 function reportCharge(charge: NuveiChargeResult | null, fallback: string) {
   if (!charge) {
     success.value = fallback
+  } else if (charge.status === 'otp_required' && charge.paymentId) {
+    otpPaymentId.value = charge.paymentId
   } else if (charge.status === 'approved') {
     success.value = '¡Listo! Tu pago fue aprobado y tu acceso está activo. Te enviamos el comprobante por correo.'
   } else if (charge.status === 'pending') {
@@ -289,6 +294,13 @@ async function removeCard() {
   } finally {
     busyCard.value = null
   }
+}
+
+async function onChargeOtpDone(payload: { charge: NuveiChargeResult; subscription: NuveiSubscription | null }) {
+  otpPaymentId.value = null
+  subscription.value = payload.subscription
+  reportCharge(payload.charge, 'Pago confirmado.')
+  await refreshAfterCharge()
 }
 
 function scrollToCards() {
@@ -478,6 +490,8 @@ onMounted(() => {
       @confirm="removeCard"
       @cancel="removeTarget = null"
     />
+
+    <ChargeOtpModal :payment-id="otpPaymentId" @close="otpPaymentId = null" @done="onChargeOtpDone" />
 
     <TransferInfoModal
       :show="showTransferModal"
