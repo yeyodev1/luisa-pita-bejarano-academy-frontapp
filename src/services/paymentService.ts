@@ -1,6 +1,7 @@
 import APIBase from './httpBase'
 import type { ApiResponse } from './authService'
 import type { PaymentPlan } from '@/constants/paymentPlans'
+import { TERMS_VERSION } from '@/constants/legal'
 
 export interface PreparePaymentResponse {
   paymentId: string
@@ -222,7 +223,8 @@ class PaymentService extends APIBase {
       subscription: NuveiSubscription | null
     }>>(
       'payments/nuvei/subscription',
-      { cardToken },
+      // Solo se llama con la casilla de Términos marcada.
+      { cardToken, acceptTerms: true, termsVersion: TERMS_VERSION },
       undefined,
       { timeout: CHARGE_TIMEOUT },
     )
@@ -244,7 +246,8 @@ class PaymentService extends APIBase {
   async checkoutComplete(checkoutToken: string, cardToken: string) {
     return this.post<ApiResponse<NuveiGuestCheckoutResult>>(
       'payments/nuvei/checkout/complete',
-      { checkoutToken, cardToken },
+      // Solo se llama con la casilla de Términos marcada.
+      { checkoutToken, cardToken, acceptTerms: true, termsVersion: TERMS_VERSION },
       undefined,
       { timeout: CHARGE_TIMEOUT },
     )

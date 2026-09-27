@@ -12,6 +12,7 @@ import {
 } from '@/utils/nuveiSdk'
 import BrandWordmark from '@/components/ui/BrandWordmark.vue'
 import SecureCardFrame from '@/components/payments/SecureCardFrame.vue'
+import TermsConsent from '@/components/payments/TermsConsent.vue'
 import { saveCheckoutDone } from '@/utils/checkoutDone'
 
 /**
@@ -35,6 +36,8 @@ const pendingCard = ref<{ token: string; transactionId: string } | null>(null)
 const pendingChargeId = ref<string | null>(null)
 const checkout = ref<NuveiGuestCheckout | null>(null)
 const submitting = ref(false)
+const termsAccepted = ref(false)
+const showTermsError = ref(false)
 let gateway: NuveiPaymentGateway | null = null
 
 function errorMessage(err: unknown, fallback: string) {
@@ -85,6 +88,10 @@ async function startCheckout() {
 
 function pay() {
   if (!gateway) return
+  if (!termsAccepted.value) {
+    showTermsError.value = true
+    return
+  }
   cardHint.value = ''
   step.value = 'processing'
   gateway.tokenize()
@@ -272,6 +279,8 @@ onMounted(() => {
             :processing="step === 'processing'"
           />
           <p v-if="cardHint" class="checkout__error">{{ cardHint }}</p>
+
+          <TermsConsent v-model="termsAccepted" :amount="amount" :show-error="showTermsError" />
 
           <dl class="checkout__total">
             <div>
