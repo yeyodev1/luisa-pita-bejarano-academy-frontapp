@@ -1,12 +1,31 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { PAYMENT_PLANS, type PaymentPlan } from '@/constants/paymentPlans'
 
-defineProps<{ loading: boolean }>()
+const props = defineProps<{
+  loading: boolean
+  /** Nuvei activo: el pago único va por tarjeta (Link to Pay) en vez de PayPhone. */
+  cardEnabled?: boolean
+  /** Nuvei Recurrencia activo: se puede elegir renovación automática. */
+  subscriptionsEnabled?: boolean
+}>()
 
 const emit = defineEmits<{
   (e: 'pay', plan: PaymentPlan): void
+  (e: 'subscribe', plan: PaymentPlan): void
   (e: 'open-transfer'): void
 }>()
+
+const mode = ref<'once' | 'subscription'>('once')
+
+function choose(plan: PaymentPlan) {
+  if (mode.value === 'subscription' && props.subscriptionsEnabled) emit('subscribe', plan)
+  else emit('pay', plan)
+}
+
+function every(months: number) {
+  return months === 1 ? 'cada mes' : `cada ${months} meses`
+}
 </script>
 
 <template>
@@ -14,7 +33,31 @@ const emit = defineEmits<{
     <div class="plans__heading">
       <span class="plans__eyebrow">Acceso completo</span>
       <h3 class="plans__title">Elige la duración de tu plan</h3>
-      <p class="plans__intro">Un solo pago, sin renovación automática.</p>
+      <p class="plans__intro">
+        {{ mode === 'subscription' ? 'Se cobra automáticamente con tu tarjeta. Cancelas cuando quieras.' : 'Un solo pago, sin renovación automática.' }}
+      </p>
+      <div v-if="subscriptionsEnabled" class="plans__mode" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="plans__mode-btn"
+          :class="{ 'plans__mode-btn--active': mode === 'once' }"
+          :aria-selected="mode === 'once'"
+          @click="mode = 'once'"
+        >
+          Pago único
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="plans__mode-btn"
+          :class="{ 'plans__mode-btn--active': mode === 'subscription' }"
+          :aria-selected="mode === 'subscription'"
+          @click="mode = 'subscription'"
+        >
+          Suscripción automática
+        </button>
+      </div>
     </div>
 
     <div class="plans__list">
@@ -30,15 +73,24 @@ const emit = defineEmits<{
           <span class="plan__currency">USD</span>
           <strong class="plan__price">{{ plan.price }}</strong>
         </div>
+        <span v-if="mode === 'subscription' && subscriptionsEnabled" class="plan__every">{{ every(plan.months) }}</span>
         <p class="plan__description">{{ plan.description }}</p>
         <ul class="plan__features">
           <li><i class="fa-solid fa-check" /> Academia completa</li>
           <li><i class="fa-solid fa-check" /> Comunidad privada</li>
           <li><i class="fa-solid fa-check" /> Acceso inmediato</li>
         </ul>
-        <button class="plan__button" :disabled="loading" @click="emit('pay', plan.id)">
+        <button class="plan__button" :disabled="loading" @click="choose(plan.id)">
           <i class="fa-regular fa-credit-card" />
-          {{ loading ? 'Preparando...' : 'Pagar con PayPhone' }}
+          {{
+            loading
+              ? 'Preparando...'
+              : mode === 'subscription' && subscriptionsEnabled
+                ? 'Suscribirme'
+                : cardEnabled
+                  ? 'Pagar con tarjeta'
+                  : 'Pagar con PayPhone'
+          }}
         </button>
         <button
           v-if="plan.id === 'annual'"
@@ -63,6 +115,42 @@ const emit = defineEmits<{
 }
 
 .plans { gap: 1.25rem; }
+
+.plans__mode {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
+  background: $lpb-cream;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.plans__mode-btn {
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $lpb-graphite;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &--active {
+    background: $lpb-black;
+    color: $lpb-white;
+  }
+}
+
+.plan__every {
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $lpb-muted;
+}
 .plans__heading { gap: 0.35rem; }
 
 .plans__eyebrow {

@@ -81,6 +81,49 @@ export interface CreatePaymentPayload {
   receipt: File
 }
 
+export interface AdminNuveiUser {
+  _id: string
+  name: string
+  lastName: string
+  email: string
+  accessUntil?: string | null
+}
+
+export interface AdminNuveiPayment {
+  id: string
+  user: AdminNuveiUser | null
+  plan: PaymentPlan
+  amount: number
+  status: 'pending' | 'approved' | 'failed' | 'canceled' | 'refunded'
+  source: 'link' | 'subscription'
+  transactionId: string | null
+  authorizationCode: string | null
+  statusDetail: number | null
+  cardBrand: string | null
+  cardLast4: string | null
+  devReference: string
+  refundedAt: string | null
+  refundDetail: string | null
+  receiptSentAt: string | null
+  createdAt: string
+}
+
+export interface AdminNuveiSubscription {
+  id: string
+  user: AdminNuveiUser | null
+  plan: PaymentPlan
+  amount: number
+  status: 'active' | 'past_due' | 'canceled'
+  cardBrand: string | null
+  cardLast4: string | null
+  nextChargeAt: string
+  lastChargeAt: string | null
+  failedAttempts: number
+  lastError: string | null
+  canceledAt: string | null
+  createdAt: string
+}
+
 class AdminService extends APIBase {
   listUsers(filters: {
     role?: string
@@ -137,6 +180,41 @@ class AdminService extends APIBase {
 
   deletePayment(id: string) {
     return this.delete<ApiResponse<{ deleted: boolean }>>(`admin/payments/${id}`)
+  }
+
+  // ── Nuvei (pagos con tarjeta y suscripciones) ──────────────────────────────
+  listNuveiPayments(filters: { search?: string; status?: string } = {}) {
+    return this.get<ApiResponse<{ payments: AdminNuveiPayment[] }>>('admin/nuvei/payments', undefined, {
+      params: filters,
+    })
+  }
+
+  refundNuveiPayment(id: string) {
+    return this.post<ApiResponse<{ id: string; status: string; refundStatus: string; detail: string }>>(
+      `admin/nuvei/payments/${id}/refund`,
+      {},
+      undefined,
+      { timeout: 60_000 },
+    )
+  }
+
+  listNuveiSubscriptions(filters: { status?: string } = {}) {
+    return this.get<ApiResponse<{ subscriptions: AdminNuveiSubscription[] }>>('admin/nuvei/subscriptions', undefined, {
+      params: filters,
+    })
+  }
+
+  cancelNuveiSubscription(id: string) {
+    return this.post<ApiResponse<AdminNuveiSubscription>>(`admin/nuvei/subscriptions/${id}/cancel`, {})
+  }
+
+  chargeNuveiSubscription(id: string) {
+    return this.post<ApiResponse<{ status: string; message?: string; transactionId?: string }>>(
+      `admin/nuvei/subscriptions/${id}/charge`,
+      {},
+      undefined,
+      { timeout: 60_000 },
+    )
   }
 }
 

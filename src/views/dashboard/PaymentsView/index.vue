@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { paymentService } from '@/services/paymentService'
+import { paymentService, type NuveiChargeResult, type NuveiSubscription } from '@/services/paymentService'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import PaymentAlerts from './PaymentAlerts.vue'
 import PaymentHero from './PaymentHero.vue'
@@ -10,6 +10,8 @@ import PaymentPlanCards from './PaymentPlanCards.vue'
 import CancelSection from './CancelSection.vue'
 import PaymentHistory from './PaymentHistory.vue'
 import TransferInfoModal from './TransferInfoModal.vue'
+import SubscriptionSection from './SubscriptionSection.vue'
+import CardSubscriptionModal from './CardSubscriptionModal.vue'
 import type { PaymentItem } from './PaymentHistory.vue'
 import { paymentPlanLabel, type PaymentPlan } from '@/constants/paymentPlans'
 
@@ -25,6 +27,19 @@ const showCancelPendingModal = ref(false)
 const showTransferModal = ref(false)
 
 const history = ref<PaymentItem[]>([])
+
+const nuvei = ref({ enabled: false, subscriptionsEnabled: false })
+const subscription = ref<NuveiSubscription | null>(null)
+const cardModal = ref<{ open: boolean; plan: PaymentPlan | null; mode: 'subscribe' | 'update-card' }>({
+  open: false,
+  plan: null,
+  mode: 'subscribe',
+})
+
+/** Suscripción que todavía cobra (activa o con un cobro fallido en reintento). */
+const liveSubscription = computed(() =>
+  subscription.value && subscription.value.status !== 'canceled' ? subscription.value : null,
+)
 
 const whatsappNumber = (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '593992019807'
 
@@ -100,7 +115,8 @@ async function initiatePayment(plan: PaymentPlan) {
 
     // Nuvei es la pasarela preferida; si el comercio aún no está activado,
     // el backend responde enabled:false y seguimos con PayPhone.
-    if (await paymentService.nuveiEnabled()) {
+    await nuveiReady
+    if (nuvei.value.enabled) {
       const { data } = await paymentService.createNuveiLink({ ...payload, plan })
       const nuveiUrl = data.data.paymentUrl
       if (nuveiUrl) {
@@ -125,6 +141,47 @@ async function initiatePayment(plan: PaymentPlan) {
   }
 }
 
+let nuveiReady: Promise<void> | null = null
+
+async function loadNuvei() {
+  nuvei.value = await paymentService.nuveiHealth()
+  if (!nuvei.value.enabled) return
+  try {
+    const { data } = await paymentService.mySubscription()
+    subscription.value = data.data.subscription
+  } catch {
+    subscription.value = null
+  }
+}
+
+function openSubscribe(plan: PaymentPlan) {
+  cardModal.value = { open: true, plan, mode: 'subscribe' }
+}
+
+function openUpdateCard() {
+  cardModal.value = { open: true, plan: subscription.value?.plan ?? null, mode: 'update-card' }
+}
+
+async function onCardDone(payload: { charge: NuveiChargeResult | null; subscription: NuveiSubscription | null }) {
+  const mode = cardModal.value.mode
+  cardModal.value = { open: false, plan: null, mode: 'subscribe' }
+  subscription.value = payload.subscription
+  error.value = ''
+  const charge = payload.charge
+  if (charge?.status === 'approved') {
+    success.value = mode === 'update-card'
+      ? 'Tarjeta actualizada y pago realizado. Tu acceso está activo.'
+      : '¡Listo! Tu suscripción está activa. Te enviamos el comprobante por correo.'
+  } else if (charge?.status === 'pending') {
+    success.value = charge.message || 'Tu pago quedó pendiente de confirmación del banco.'
+  } else if (charge?.status === 'failed') {
+    error.value = charge.message || 'La tarjeta fue rechazada.'
+  } else {
+    success.value = 'Tarjeta actualizada. Los próximos cobros se harán con esta tarjeta.'
+  }
+  await Promise.all([userStore.validateSession(), loadHistory()])
+}
+
 async function cancelSubscription() {
   cancelLoading.value = true
   error.value = ''
@@ -134,6 +191,7 @@ async function cancelSubscription() {
     userStore.setUser({ subscriptionStatus: 'canceled' })
     success.value = 'Suscripción cancelada. Seguirás con acceso hasta el final del período pagado.'
     showCancelSubModal.value = false
+    await loadNuvei()
   } catch (err: unknown) {
     const e = err as { message?: string }
     error.value = e.message || 'Error al cancelar la suscripción'
@@ -177,7 +235,10 @@ function goToWhatsApp() {
   closeTransferModal()
 }
 
-onMounted(loadHistory)
+onMounted(() => {
+  loadHistory()
+  nuveiReady = loadNuvei()
+})
 </script>
 
 <template>
@@ -199,10 +260,20 @@ onMounted(loadHistory)
       @cancel-pending="showCancelPendingModal = true"
     />
 
+    <SubscriptionSection
+      v-if="liveSubscription"
+      :subscription="liveSubscription"
+      @update-card="openUpdateCard"
+      @cancel="showCancelSubModal = true"
+    />
+
     <PaymentPlanCards
-      v-if="!isActive"
+      v-if="!isActive && !liveSubscription"
       :loading="loading"
+      :card-enabled="nuvei.enabled"
+      :subscriptions-enabled="nuvei.subscriptionsEnabled"
       @pay="initiatePayment"
+      @subscribe="openSubscribe"
       @open-transfer="openTransferModal"
     />
 
@@ -236,6 +307,14 @@ onMounted(loadHistory)
       danger
       @confirm="cancelPending"
       @cancel="showCancelPendingModal = false"
+    />
+
+    <CardSubscriptionModal
+      :open="cardModal.open"
+      :plan="cardModal.plan"
+      :mode="cardModal.mode"
+      @close="cardModal.open = false"
+      @done="onCardDone"
     />
 
     <TransferInfoModal

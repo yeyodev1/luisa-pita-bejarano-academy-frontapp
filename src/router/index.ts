@@ -441,6 +441,20 @@ const routes: RouteRecordRaw[] = [
         } satisfies RouteMeta,
       },
       {
+        path: 'pagos-tarjeta',
+        name: 'admin-card-payments',
+        component: () => import('@/views/admin/AdminCardPaymentsView/index.vue'),
+        meta: {
+          title: 'Admin - Pagos con tarjeta | Luisa Pita Bejarano',
+          description: 'Pagos con tarjeta, reembolsos y suscripciones de Nuvei.',
+          canonical: `${SITE}/admin/pagos-tarjeta`,
+          ogTitle: 'Admin - Pagos con tarjeta | Luisa Pita Bejarano',
+          ogDescription: 'Pagos con tarjeta, reembolsos y suscripciones de Nuvei.',
+          ogUrl: `${SITE}/admin/pagos-tarjeta`,
+          ogImage: OG_IMAGE,
+        } satisfies RouteMeta,
+      },
+      {
         path: 'pagos',
         name: 'admin-payments',
         component: () => import('@/views/admin/AdminPaymentsView/index.vue'),

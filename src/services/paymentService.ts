@@ -46,6 +46,42 @@ export interface NuveiStatusResponse {
   email?: string
 }
 
+export type NuveiSubscriptionStatus = 'active' | 'past_due' | 'canceled'
+
+export interface NuveiSubscription {
+  id: string
+  plan: PaymentPlan
+  amount: number
+  status: NuveiSubscriptionStatus
+  cardBrand: string | null
+  cardLast4: string | null
+  nextChargeAt: string
+  lastChargeAt: string | null
+  failedAttempts: number
+  lastError: string | null
+  canceledAt: string | null
+  createdAt: string
+}
+
+export interface NuveiCheckoutConfig {
+  enabled: boolean
+  environment: 'stg' | 'prod'
+  appCode: string | null
+  appKey: string | null
+  user: { id: string; email: string }
+  subscription: NuveiSubscription | null
+}
+
+export interface NuveiChargeResult {
+  status: 'approved' | 'pending' | 'failed' | 'duplicate' | 'locked'
+  paymentId?: string
+  transactionId?: string
+  message?: string
+}
+
+/** Los cobros con tarjeta pueden tardar más que el timeout por defecto. */
+const CHARGE_TIMEOUT = 60_000
+
 class PaymentService extends APIBase {
   async prepareAnnual(payload: { email: string; name: string; lastName: string }) {
     return this.post<ApiResponse<PreparePaymentResponse>>('payments/prepare', {
@@ -111,13 +147,20 @@ class PaymentService extends APIBase {
 
   // ── Nuvei (Link to Pay) ────────────────────────────────────────────────────
   /** Mientras el comercio no esté activado por Nuvei esto devuelve enabled:false. */
-  async nuveiEnabled(): Promise<boolean> {
+  async nuveiHealth(): Promise<{ enabled: boolean; subscriptionsEnabled: boolean }> {
     try {
-      const res = await this.get<ApiResponse<{ enabled: boolean }>>('payments/nuvei/health')
-      return res.data.data.enabled === true
+      const res = await this.get<ApiResponse<{ enabled: boolean; subscriptionsEnabled?: boolean }>>('payments/nuvei/health')
+      return {
+        enabled: res.data.data.enabled === true,
+        subscriptionsEnabled: res.data.data.subscriptionsEnabled === true,
+      }
     } catch {
-      return false
+      return { enabled: false, subscriptionsEnabled: false }
     }
+  }
+
+  async nuveiEnabled(): Promise<boolean> {
+    return (await this.nuveiHealth()).enabled
   }
 
   async createNuveiLink(payload: {
@@ -134,6 +177,37 @@ class PaymentService extends APIBase {
 
   async nuveiStatus(devReference: string) {
     return this.get<ApiResponse<NuveiStatusResponse>>(`payments/nuvei/status/${devReference}`)
+  }
+
+  // ── Nuvei (suscripciones con tarjeta guardada) ─────────────────────────────
+  async subscriptionConfig() {
+    return this.get<ApiResponse<NuveiCheckoutConfig>>('payments/nuvei/subscription/config')
+  }
+
+  async mySubscription() {
+    return this.get<ApiResponse<{ subscription: NuveiSubscription | null }>>('payments/nuvei/subscription')
+  }
+
+  async verifyCard(transactionId: string, otp: string) {
+    return this.post<ApiResponse<{ verified: boolean }>>('payments/nuvei/card/verify', { transactionId, otp })
+  }
+
+  async subscribe(plan: PaymentPlan, cardToken: string) {
+    return this.post<ApiResponse<{ charge: NuveiChargeResult; subscription: NuveiSubscription | null }>>(
+      'payments/nuvei/subscription',
+      { plan, cardToken },
+      undefined,
+      { timeout: CHARGE_TIMEOUT },
+    )
+  }
+
+  async updateSubscriptionCard(cardToken: string) {
+    return this.post<ApiResponse<{ charge: NuveiChargeResult | null; subscription: NuveiSubscription | null }>>(
+      'payments/nuvei/subscription/card',
+      { cardToken },
+      undefined,
+      { timeout: CHARGE_TIMEOUT },
+    )
   }
 }
 
