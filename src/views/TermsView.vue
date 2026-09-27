@@ -200,6 +200,10 @@ import {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  max-width: 780px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 2rem);
 }
 
 .legal__header {
@@ -285,6 +289,9 @@ ul {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+  list-style: disc;
 }
 
 strong {
