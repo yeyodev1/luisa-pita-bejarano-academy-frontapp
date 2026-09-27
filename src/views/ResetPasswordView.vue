@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { authService } from '@/services/authService'
 import AuthLayout from '@/components/auth/AuthLayout.vue'
@@ -16,6 +16,9 @@ const confirmPassword = ref('')
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
+
+/** Enlace de bienvenida del checkout sin login: la alumna crea su primera contraseña. */
+const isWelcome = computed(() => route.query.bienvenida === '1')
 
 onMounted(() => {
   const t = route.query.token
@@ -53,8 +56,12 @@ const onSubmit = async () => {
 
 <template>
   <AuthLayout
-    title="Nueva contraseña"
-    subtitle="Crea una contraseña segura para tu cuenta."
+    :title="isWelcome ? 'Crea tu contraseña' : 'Nueva contraseña'"
+    :subtitle="
+      isWelcome
+        ? 'Tu suscripción está activa. Elige la contraseña con la que entrarás a la academia.'
+        : 'Crea una contraseña segura para tu cuenta.'
+    "
   >
     <div v-if="success" class="auth-success">
       <p>Contraseña actualizada. Serás redirigida al inicio de sesión...</p>

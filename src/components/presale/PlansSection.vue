@@ -37,7 +37,7 @@ function startSubscription() {
       currency: 'USD',
     })
   }
-  router.push({ name: userStore.isAuthenticated ? 'payments' : 'register' })
+  router.push({ name: userStore.isAuthenticated ? 'payments' : 'subscribe' })
 }
 
 function openCheckout(plan: PaymentPlan) {
@@ -112,7 +112,7 @@ function onBoxError(message: string) {
             <li><i class="fa-solid fa-check" /> Comunidad privada</li>
           </ul>
           <button type="button" class="plan-card__button plan-card__button--primary" @click="startSubscription">
-            {{ userStore.isAuthenticated ? 'Activar mi suscripción' : 'Crear mi cuenta y suscribirme' }}
+            {{ userStore.isAuthenticated ? 'Activar mi suscripción' : 'Suscribirme ahora' }}
           </button>
           <RouterLink v-if="!userStore.isAuthenticated" :to="{ name: 'login' }" class="plan-card__login">
             Ya tengo cuenta

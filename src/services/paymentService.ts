@@ -93,6 +93,23 @@ export interface NuveiChargeResult {
   message?: string
 }
 
+export interface NuveiGuestCheckout {
+  checkoutToken: string
+  environment: 'stg' | 'prod'
+  appCode: string | null
+  appKey: string | null
+  user: { id: string; email: string }
+  amount: number
+}
+
+export interface NuveiGuestCheckoutResult {
+  status: 'approved' | 'pending' | 'scheduled' | 'failed'
+  email?: string
+  /** Solo si ya tenía acceso pagado: hoy no se cobró y el primer cobro es esta fecha. */
+  firstChargeAt?: string | null
+  message?: string
+}
+
 /** Los cobros con tarjeta pueden tardar más que el timeout por defecto. */
 const CHARGE_TIMEOUT = 60_000
 
@@ -206,6 +223,35 @@ class PaymentService extends APIBase {
       { cardToken },
       undefined,
       { timeout: CHARGE_TIMEOUT },
+    )
+  }
+
+  // ── Checkout sin iniciar sesión ────────────────────────────────────────────
+  async checkoutStart(payload: { name: string; lastName: string; email: string }) {
+    return this.post<ApiResponse<NuveiGuestCheckout>>('payments/nuvei/checkout/start', payload)
+  }
+
+  async checkoutVerifyCard(checkoutToken: string, transactionId: string, otp: string) {
+    return this.post<ApiResponse<{ verified: boolean }>>('payments/nuvei/checkout/card/verify', {
+      checkoutToken,
+      transactionId,
+      otp,
+    })
+  }
+
+  async checkoutComplete(checkoutToken: string, cardToken: string) {
+    return this.post<ApiResponse<NuveiGuestCheckoutResult>>(
+      'payments/nuvei/checkout/complete',
+      { checkoutToken, cardToken },
+      undefined,
+      { timeout: CHARGE_TIMEOUT },
+    )
+  }
+
+  async resendAccessEmail(email: string) {
+    return this.post<ApiResponse<{ sent: boolean; cooldownSeconds: number }>>(
+      'payments/nuvei/checkout/resend-access',
+      { email },
     )
   }
 
