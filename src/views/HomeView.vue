@@ -6,6 +6,7 @@ import BenefitsSection from '@/components/presale/BenefitsSection.vue'
 import TestimonialsSection from '@/components/home/TestimonialsSection.vue'
 import VideoSection from '@/components/home/VideoSection.vue'
 import FaqSection from '@/components/home/FaqSection.vue'
+import EquipmentSection from '@/components/home/EquipmentSection.vue'
 import FinalCtaSection from '@/components/home/FinalCtaSection.vue'
 import MarqueeText from '@/components/ui/MarqueeText.vue'
 
@@ -22,7 +23,6 @@ const marqueeItems = [
   'Un año contigo',
   'Sin dietas restrictivas',
   'Comunidad anual',
-  'Mujeres decididas',
   'Online · Ecuador · Latam · USA · Europa',
   'Por invitación',
 ]
@@ -37,6 +37,7 @@ const marqueeItems = [
     <MarqueeText :items="['No es para todas', 'Si calificas, recibes el aviso primero', 'Compromiso anual real']" theme="dark" :speed="48" />
     <VideoSection />
     <TestimonialsSection />
+    <EquipmentSection />
     <FaqSection />
     <FinalCtaSection />
   </div>
