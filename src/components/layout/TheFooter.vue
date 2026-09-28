@@ -13,7 +13,7 @@ const year = new Date().getFullYear()
         <BrandWordmark size="lg" />
         <p class="footer__tagline">
           Un año contigo, un año cerca de Luisa.<br />
-          La comunidad anual cerrada para mujeres decididas.
+          La comunidad para transformar tu cuerpo y tu vida.
         </p>
       </div>
 
