@@ -22,6 +22,7 @@ const menuItems = [
   { name: 'admin-assessments', label: 'Valoraciones', icon: 'weight-scale' },
   { name: 'admin-users', label: 'Usuarios', icon: 'users' },
   { name: 'admin-payments', label: 'Pagos manuales', icon: 'money-bill' },
+  { name: 'admin-card-payments', label: 'Pagos con tarjeta', icon: 'credit-card' },
 ]
 
 function isActive(name: string): boolean {
@@ -75,6 +76,7 @@ function logout() {
               :class="{
                 'fa-users': item.icon === 'users',
                 'fa-money-bill': item.icon === 'money-bill',
+                'fa-credit-card': item.icon === 'credit-card',
                 'fa-book': item.icon === 'book',
                 'fa-calendar': item.icon === 'calendar',
                 'fa-utensils': item.icon === 'utensils',

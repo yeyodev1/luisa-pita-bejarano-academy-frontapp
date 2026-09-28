@@ -36,6 +36,7 @@ const year = new Date().getFullYear()
           Instagram <em>{{ INSTAGRAM_HANDLE }}</em>
         </a>
         <RouterLink :to="{ name: 'privacy-policy' }" class="footer__link">Políticas de privacidad</RouterLink>
+        <RouterLink :to="{ name: 'terms' }" class="footer__link">Términos y condiciones</RouterLink>
         <RouterLink :to="{ name: 'legal-notice' }" class="footer__link">Aviso legal</RouterLink>
       </nav>
       <p class="footer__copy">© {{ year }} Luisa Pita Bejarano · Ecuador</p>

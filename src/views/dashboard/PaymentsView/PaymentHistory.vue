@@ -20,6 +20,7 @@ function statusLabel(status: string) {
     case 'pending': return 'Pendiente'
     case 'failed': return 'Fallido'
     case 'canceled': return 'Cancelado'
+    case 'refunded': return 'Reembolsado'
     default: return status
   }
 }
