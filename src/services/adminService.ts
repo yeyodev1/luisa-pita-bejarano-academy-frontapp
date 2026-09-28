@@ -104,8 +104,18 @@ export interface AdminNuveiPayment {
   devReference: string
   refundedAt: string | null
   refundDetail: string | null
+  refundedAmount: number | null
   receiptSentAt: string | null
   createdAt: string
+}
+
+export interface AdminRefundPreview {
+  amount: number
+  policyPercent: number
+  acquiredAt: string
+  deadline: string
+  withinWindow: boolean
+  policyAmount: number
 }
 
 export interface AdminNuveiSubscription {
@@ -189,8 +199,13 @@ class AdminService extends APIBase {
     })
   }
 
+  refundPreview(id: string) {
+    return this.get<ApiResponse<AdminRefundPreview>>(`admin/nuvei/payments/${id}/refund-preview`)
+  }
+
+  /** Reembolso total con Nuvei. */
   refundNuveiPayment(id: string) {
-    return this.post<ApiResponse<{ id: string; status: string; refundStatus: string; detail: string }>>(
+    return this.post<ApiResponse<{ id: string; status: string; refundStatus: string; refundedAmount: number; detail: string }>>(
       `admin/nuvei/payments/${id}/refund`,
       {},
       undefined,

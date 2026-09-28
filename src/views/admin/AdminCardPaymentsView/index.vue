@@ -6,6 +6,7 @@ import {
   type AdminNuveiSubscription,
 } from '@/services/adminService'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
+import RefundModal from './RefundModal.vue'
 import { paymentPlanLabel } from '@/constants/paymentPlans'
 
 /**
@@ -94,16 +95,15 @@ async function run(action: () => Promise<string>) {
   }
 }
 
-function refund() {
-  const target = refundTarget.value
-  refundTarget.value = null
-  if (!target) return
-  run(async () => {
+async function refund(target: AdminNuveiPayment) {
+  await run(async () => {
     const { data } = await adminService.refundNuveiPayment(target.id)
+    const amount = `USD ${data.data.refundedAmount.toFixed(2)}`
     return data.data.refundStatus === 'pending'
-      ? 'Reembolso enviado. Nuvei espera la confirmación del banco.'
-      : 'Reembolso realizado y acceso retirado.'
+      ? `Reembolso de ${amount} enviado a Nuvei; espera confirmación del banco. Se avisó a la alumna por correo.`
+      : `Reembolso de ${amount} realizado en Nuvei. Suscripción cancelada, acceso retirado y correo enviado a la alumna.`
   })
+  refundTarget.value = null
 }
 
 function cancelSubscription() {
@@ -227,7 +227,9 @@ onMounted(load)
                 >
                   Reembolsar
                 </button>
-                <small v-else-if="p.refundedAt">{{ formatDate(p.refundedAt) }}</small>
+                <small v-else-if="p.refundedAt">
+                  Devuelto USD {{ (p.refundedAmount ?? p.amount).toFixed(2) }}<br />{{ formatDate(p.refundedAt) }}
+                </small>
               </td>
             </tr>
           </tbody>
@@ -280,16 +282,7 @@ onMounted(load)
       </div>
     </section>
 
-    <ConfirmModal
-      :open="!!refundTarget"
-      title="Reembolsar pago"
-      :message="`Se devolverán USD ${refundTarget?.amount} a la tarjeta de ${who(refundTarget?.user ?? null)} y se le quitará el acceso de ese pago. Si era de una suscripción, también se cancela.`"
-      action-label="Reembolsar"
-      confirm-text="reembolsar"
-      danger
-      @confirm="refund"
-      @cancel="refundTarget = null"
-    />
+    <RefundModal :payment="refundTarget" :busy="busy" @confirm="refund" @cancel="refundTarget = null" />
 
     <ConfirmModal
       :open="!!cancelTarget"
