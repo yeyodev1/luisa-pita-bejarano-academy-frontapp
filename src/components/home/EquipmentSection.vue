@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /** Qué materiales se necesitan para las clases online (texto de Luisa). */
 const items = [
-  { emoji: '🏋🏻‍♀️', title: 'Un mat o colchoneta' },
-  { emoji: '🏋🏻‍♀️', title: 'Pesas' },
-  { emoji: '🎀', title: 'Ligas de resistencia' },
+  { icon: 'fa-rug', tone: 'green', title: 'Un mat o colchoneta' },
+  { icon: 'fa-dumbbell', tone: 'gold', title: 'Pesas' },
+  { icon: 'fa-ribbon', tone: 'rose', title: 'Ligas de resistencia' },
 ]
 </script>
 
@@ -13,22 +13,28 @@ const items = [
       <header class="equipment__header">
         <span class="eyebrow">Tus clases online</span>
         <h2 class="equipment__title display-md">
-          ✨ ¿Qué necesitas para <span class="italic-accent">mis clases online?</span> ✨
+          <i class="fa-solid fa-wand-magic-sparkles equipment__sparkle" aria-hidden="true" />
+          ¿Qué necesitas para <span class="italic-accent">mis clases online?</span>
         </h2>
         <p class="equipment__lede">Para nuestras clases vas a necesitar:</p>
       </header>
 
       <ul class="equipment__list">
         <li v-for="item in items" :key="item.title" class="equipment__item">
-          <span class="equipment__emoji" aria-hidden="true">{{ item.emoji }}</span>
+          <span class="equipment__icon" :class="`equipment__icon--${item.tone}`" aria-hidden="true">
+            <i class="fa-solid" :class="item.icon" />
+          </span>
           <span class="equipment__name">{{ item.title }}</span>
         </li>
       </ul>
 
-      <p class="equipment__note">
-        Pero si todavía no tienes pesas, ¡no hay problema! 🙌🏻 Puedes reemplazarlas por botellas de agua o cualquier
-        objeto que tengas en casa y que puedas sostener con seguridad. 💧💪🏻
-      </p>
+      <div class="equipment__note">
+        <span class="equipment__note-icon" aria-hidden="true"><i class="fa-solid fa-bottle-water" /></span>
+        <p>
+          <strong>Pero si todavía no tienes pesas, ¡no hay problema!</strong> Puedes reemplazarlas por botellas de agua o
+          cualquier objeto que tengas en casa y que puedas sostener con seguridad.
+        </p>
+      </div>
     </div>
   </section>
 </template>
@@ -100,12 +106,41 @@ const items = [
   }
 }
 
-.equipment__emoji {
-  font-size: 2.2rem;
-  line-height: 1;
+.equipment__sparkle {
+  color: $lpb-gold;
+  font-size: 0.7em;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+.equipment__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  font-size: 1.45rem;
 
   @media (max-width: 720px) {
-    font-size: 1.7rem;
+    width: 2.9rem;
+    height: 2.9rem;
+    font-size: 1.2rem;
+  }
+
+  &--green {
+    background: rgba($lpb-green, 0.14);
+    color: $lpb-green-deep;
+  }
+
+  &--gold {
+    background: rgba($lpb-gold, 0.18);
+    color: darken($lpb-gold, 18%);
+  }
+
+  &--rose {
+    background: #fde7ee;
+    color: #d6457a;
   }
 }
 
@@ -116,15 +151,39 @@ const items = [
 }
 
 .equipment__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   margin: 0 auto;
-  max-width: 62ch;
+  max-width: 64ch;
   padding: 1.25rem 1.5rem;
-  font-family: $font-sans;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: $lpb-graphite;
+  text-align: left;
   background: rgba($lpb-green, 0.08);
   border: 1px solid rgba($lpb-green, 0.25);
   border-radius: 1rem;
+
+  p {
+    margin: 0;
+    font-family: $font-sans;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: $lpb-graphite;
+  }
+
+  strong {
+    color: $lpb-black;
+  }
+}
+
+.equipment__note-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  background: #e3f1fb;
+  color: #2f8fd8;
+  font-size: 1.1rem;
 }
 </style>
