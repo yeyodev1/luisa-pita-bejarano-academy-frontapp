@@ -45,7 +45,7 @@ const scrollToPlans = () => {
       </h1>
 
       <p class="presale-hero__lede">
-        Accede a la academia junto a Luisa para transformar tu cuerpo y tu vida.
+        Entrena junto a Luisa para transformar tu cuerpo y tu vida.
         Elige entre 1, 3, 6 o 12 meses de acompañamiento, entrenamiento y nutrición.
       </p>
 

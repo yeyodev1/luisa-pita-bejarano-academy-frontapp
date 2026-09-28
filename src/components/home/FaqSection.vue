@@ -114,7 +114,7 @@ onBeforeUnmount(() => ctx?.revert())
       <header class="faq__header">
         <span class="eyebrow">Preguntas frecuentes</span>
         <h2 class="faq__title display-md">
-          Lo que las decididas <span class="italic-accent">suelen preguntar.</span>
+          Lo que más nos <span class="italic-accent">suelen preguntar.</span>
         </h2>
       </header>
 
