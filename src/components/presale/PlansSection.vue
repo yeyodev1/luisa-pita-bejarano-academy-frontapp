@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { paymentService } from '@/services/paymentService'
 import type { PaymentBoxConfig } from '@/services/paymentService'
@@ -20,6 +20,14 @@ const selectedPlanDetails = computed(() => getPaymentPlan(selectedPlan.value))
  * de pago único con PayPhone como antes.
  */
 const router = useRouter()
+const route = useRoute()
+
+/**
+ * Plan de prueba de USD 1 para probar cobros reales. Solo se muestra con
+ * ?prueba=1 y el precio real lo decide el servidor (solo correos autorizados
+ * en NUVEI_TEST_EMAILS pagan USD 1).
+ */
+const showTestPlan = computed(() => route.query.prueba === '1')
 const userStore = useUserStore()
 const monthlyOnly = ref(false)
 const monthly = getPaymentPlan('monthly')
@@ -118,6 +126,22 @@ function onBoxError(message: string) {
             Ya tengo cuenta
           </RouterLink>
         </article>
+
+        <article v-if="showTestPlan" class="plan-card plan-card--test">
+          <div class="plan-card__badge">Plan de prueba</div>
+          <h3 class="plan-card__name">Prueba de pago</h3>
+          <p class="plan-card__description">
+            Cobro real de USD 1 para probar la pasarela. Solo para correos autorizados.
+          </p>
+          <div class="plan-card__price">
+            <span class="plan-card__currency">$</span>
+            <span class="plan-card__amount">1</span>
+            <span class="plan-card__period">al mes</span>
+          </div>
+          <RouterLink :to="{ name: 'subscribe' }" class="plan-card__button plan-card__button--primary">
+            Pagar USD 1
+          </RouterLink>
+        </article>
       </div>
 
       <div v-else class="plans__grid">
@@ -193,6 +217,10 @@ function onBoxError(message: string) {
     flex: 1 1 320px;
     max-width: 420px;
   }
+}
+
+.plan-card--test {
+  border: 2px dashed $lpb-amber;
 }
 
 .plan-card__login {
