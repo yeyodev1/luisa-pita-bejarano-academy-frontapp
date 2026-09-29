@@ -103,10 +103,32 @@ export interface NuveiGuestCheckout {
   amount: number
 }
 
+/** Comprobante de un pago con tarjeta (se muestra en la web aunque no llegue el correo). */
+export interface NuveiReceipt {
+  paymentId: string
+  merchant: string
+  description: string
+  planLabel: string
+  amount: number
+  subtotal: number
+  vat: number
+  currency: string
+  status: 'approved' | 'refunded' | string
+  transactionId: string | null
+  authorizationCode: string | null
+  cardBrand: string | null
+  cardLast4: string | null
+  paidAt: string
+  refundedAmount: number | null
+  refundedAt: string | null
+  customer: { name: string; email: string } | null
+}
+
 export interface NuveiGuestCheckoutResult {
   /** otp_required: el banco pidió un código para confirmar el cobro (ver paymentId). */
   status: 'approved' | 'pending' | 'scheduled' | 'failed' | 'otp_required'
   paymentId?: string
+  receipt?: NuveiReceipt | null
   email?: string
   /** Solo si ya tenía acceso pagado: hoy no se cobró y el primer cobro es esta fecha. */
   firstChargeAt?: string | null
@@ -277,6 +299,10 @@ class PaymentService extends APIBase {
       'payments/nuvei/checkout/resend-access',
       { email },
     )
+  }
+
+  async getReceipt(paymentId: string) {
+    return this.get<ApiResponse<NuveiReceipt>>(`payments/nuvei/receipts/${paymentId}`)
   }
 
   async listCards() {

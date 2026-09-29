@@ -3,10 +3,16 @@ import { paymentPlanLabel, type PaymentPlan } from '@/constants/paymentPlans'
 
 export interface PaymentItem {
   id: string
+  type?: 'manual' | 'payphone' | 'nuvei'
   plan: PaymentPlan
   amount: number
   status: string
   createdAt: string
+}
+
+/** Los pagos con tarjeta (Nuvei) tienen comprobante en la web. */
+function hasReceipt(item: PaymentItem) {
+  return item.type === 'nuvei' && (item.status === 'approved' || item.status === 'refunded')
 }
 
 defineProps<{
@@ -45,14 +51,15 @@ function formatDate(iso: string) {
             <th>Concepto</th>
             <th>Monto</th>
             <th>Estado</th>
+            <th />
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td colspan="4" class="history__empty">Cargando historial…</td>
+            <td colspan="5" class="history__empty">Cargando historial…</td>
           </tr>
           <tr v-else-if="items.length === 0">
-            <td colspan="4" class="history__empty">Aún no tienes pagos registrados</td>
+            <td colspan="5" class="history__empty">Aún no tienes pagos registrados</td>
           </tr>
           <tr v-for="item in items" :key="item.id">
             <td>{{ formatDate(item.createdAt) }}</td>
@@ -62,6 +69,15 @@ function formatDate(iso: string) {
               <span class="history__badge" :class="`history__badge--${item.status}`">
                 {{ statusLabel(item.status) }}
               </span>
+            </td>
+            <td>
+              <RouterLink
+                v-if="hasReceipt(item)"
+                :to="{ name: 'payment-receipt', params: { id: item.id } }"
+                class="history__receipt"
+              >
+                <i class="fa-solid fa-receipt" /> Comprobante
+              </RouterLink>
             </td>
           </tr>
         </tbody>
@@ -137,5 +153,16 @@ function formatDate(iso: string) {
   &--pending { background: rgba($lpb-amber, 0.12); color: $lpb-amber; }
   &--failed,
   &--canceled { background: rgba($alert-error, 0.1); color: $alert-error; }
+}
+
+.history__receipt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $lpb-green-deep;
+  text-decoration: underline;
 }
 </style>
