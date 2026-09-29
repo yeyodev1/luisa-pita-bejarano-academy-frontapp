@@ -386,6 +386,20 @@ const routes: RouteRecordRaw[] = [
         } satisfies RouteMeta,
       },
       {
+        path: 'pagos/comprobante/:id',
+        name: 'payment-receipt',
+        component: () => import('@/views/dashboard/PaymentReceiptView.vue'),
+        meta: {
+          title: 'Comprobante de pago | Luisa Pita Bejarano',
+          description: 'Comprobante de tu pago con tarjeta.',
+          canonical: `${SITE}/app/pagos`,
+          ogTitle: 'Comprobante de pago | Luisa Pita Bejarano',
+          ogDescription: 'Comprobante de tu pago con tarjeta.',
+          ogUrl: `${SITE}/app/pagos`,
+          ogImage: OG_IMAGE,
+        } satisfies RouteMeta,
+      },
+      {
         path: 'pagos',
         name: 'payments',
         component: () => import('@/views/dashboard/PaymentsView/index.vue'),

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { paymentService } from '@/services/paymentService'
 import { readCheckoutDone } from '@/utils/checkoutDone'
 import BrandWordmark from '@/components/ui/BrandWordmark.vue'
+import PaymentReceipt from '@/components/payments/PaymentReceipt.vue'
 
 /**
  * Final del checkout sin login: confirma la suscripción, dice a qué correo
@@ -79,6 +80,8 @@ onBeforeUnmount(() => clearInterval(timer))
       <p v-else class="welcome__info">
         También te enviamos el comprobante de pago. Tu suscripción se renueva cada mes y puedes cancelarla cuando quieras.
       </p>
+
+      <PaymentReceipt v-if="done?.receipt" :receipt="done.receipt" />
 
       <div class="welcome__spam">
         <h2><i class="fa-solid fa-triangle-exclamation" /> ¿No ves el correo?</h2>

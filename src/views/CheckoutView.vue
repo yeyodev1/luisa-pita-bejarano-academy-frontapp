@@ -175,7 +175,12 @@ function finish(result: Awaited<ReturnType<typeof paymentService.checkoutComplet
     return
   }
   const email = result.email || form.value.email.trim()
-  saveCheckoutDone({ email, status: result.status, firstChargeAt: result.firstChargeAt ?? null })
+  saveCheckoutDone({
+    email,
+    status: result.status,
+    firstChargeAt: result.firstChargeAt ?? null,
+    receipt: result.receipt ?? null,
+  })
   router.replace({ name: 'subscription-welcome', query: { email } })
 }
 
