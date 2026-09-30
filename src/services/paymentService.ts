@@ -294,6 +294,13 @@ class PaymentService extends APIBase {
     )
   }
 
+  /** Red de seguridad: cómo quedó el pago si el navegador no recibió la respuesta. */
+  async checkoutStatus(checkoutToken: string) {
+    return this.post<ApiResponse<Omit<NuveiGuestCheckoutResult, 'status'> & {
+      status: NuveiGuestCheckoutResult['status'] | 'processing' | 'none'
+    }>>('payments/nuvei/checkout/status', { checkoutToken })
+  }
+
   async resendAccessEmail(email: string) {
     return this.post<ApiResponse<{ sent: boolean; cooldownSeconds: number }>>(
       'payments/nuvei/checkout/resend-access',

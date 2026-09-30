@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { paymentService, type NuveiGuestCheckout } from '@/services/paymentService'
@@ -36,6 +36,13 @@ const pendingCard = ref<{ token: string; transactionId: string } | null>(null)
 const pendingChargeId = ref<string | null>(null)
 const checkout = ref<NuveiGuestCheckout | null>(null)
 const submitting = ref(false)
+/** Se muestra si el pago tarda más de lo normal (la red de seguridad sigue consultando). */
+const slowProcessing = ref(false)
+let watchdog: ReturnType<typeof setTimeout> | undefined
+let watchdogStartedAt = 0
+const WATCHDOG_FIRST_CHECK_MS = 25_000
+const WATCHDOG_EVERY_MS = 5_000
+const WATCHDOG_MAX_MS = 3 * 60_000
 const termsAccepted = ref(false)
 const showTermsError = ref(false)
 let gateway: NuveiPaymentGateway | null = null
@@ -94,7 +101,48 @@ function pay() {
   }
   cardHint.value = ''
   step.value = 'processing'
+  startWatchdog()
   gateway.tokenize()
+}
+
+/**
+ * Red de seguridad: si el pago no responde a tiempo, se consulta al servidor
+ * cómo quedó. Si ya se cobró (o se agendó), se pasa a la pantalla final.
+ */
+function startWatchdog() {
+  stopWatchdog()
+  slowProcessing.value = false
+  watchdogStartedAt = Date.now()
+  watchdog = setTimeout(checkStatus, WATCHDOG_FIRST_CHECK_MS)
+}
+
+function stopWatchdog() {
+  clearTimeout(watchdog)
+  watchdog = undefined
+}
+
+async function checkStatus() {
+  if (step.value !== 'processing' || !checkout.value) return
+  slowProcessing.value = true
+  try {
+    const { data } = await paymentService.checkoutStatus(checkout.value.checkoutToken)
+    const result = data.data
+    if (result.status === 'approved' || result.status === 'scheduled' || result.status === 'pending') {
+      finish({ ...result, status: result.status })
+      return
+    }
+    if (result.status === 'failed') {
+      stopWatchdog()
+      cardHint.value = 'La tarjeta fue rechazada. Prueba con otra tarjeta.'
+      step.value = 'card'
+      return
+    }
+  } catch {
+    /* se reintenta abajo */
+  }
+  if (Date.now() - watchdogStartedAt < WATCHDOG_MAX_MS) {
+    watchdog = setTimeout(checkStatus, WATCHDOG_EVERY_MS)
+  }
 }
 
 async function onTokenized(response: NuveiTokenizeResponse) {
@@ -160,6 +208,7 @@ async function submitChargeOtp() {
 }
 
 function finish(result: Awaited<ReturnType<typeof paymentService.checkoutComplete>>['data']['data']) {
+  stopWatchdog()
   if (result.status === 'otp_required' && result.paymentId) {
     pendingChargeId.value = result.paymentId
     pendingCard.value = null
@@ -187,6 +236,7 @@ function finish(result: Awaited<ReturnType<typeof paymentService.checkoutComplet
 async function complete(cardToken: string) {
   if (!checkout.value) return
   step.value = 'processing'
+  if (!watchdog) startWatchdog()
   try {
     const { data } = await paymentService.checkoutComplete(checkout.value.checkoutToken, cardToken)
     finish(data.data)
@@ -212,6 +262,8 @@ function editDetails() {
 onMounted(() => {
   if (userStore.isAuthenticated) router.replace({ name: 'payments' })
 })
+
+onBeforeUnmount(stopWatchdog)
 </script>
 
 <template>
@@ -282,6 +334,7 @@ onMounted(() => {
             container-id="checkout-card-form"
             :environment="checkout?.environment"
             :processing="step === 'processing'"
+            :processing-text="slowProcessing ? 'Seguimos confirmando tu pago con Nuvei…' : 'Procesando tu pago con Nuvei…'"
           />
           <p v-if="cardHint" class="checkout__error">{{ cardHint }}</p>
 
