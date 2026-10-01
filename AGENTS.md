@@ -41,3 +41,42 @@ No test, lint, or formatter scripts are configured. Verification is `build` only
 - Components are PascalCase (`HeroSection.vue`, `AppButton.vue`).
 - Page SEO is defined in the route `meta`, not inside components.
 - Images are served from Cloudinary (`res.cloudinary.com/dkosgkjpq`).
+
+## Academia (dashboard y admin): reglas que no se deben romper
+Backend hermano: `../luisa-pita-bejarano-academy-backapp` (ver su `AGENTS.md`).
+Verificación: `npx vue-tsc --noEmit -p tsconfig.app.json` y `pnpm build`.
+
+### Estado de acceso
+El backend deja `subscriptionStatus: 'active'` aunque `accessUntil` ya pasó. Nunca muestres
+"Activo" solo por ese campo:
+- Alumna: usa `userStore.effectiveSubscriptionStatus` (`src/stores/user.ts`).
+- Admin › Usuarios: `effectiveStatus()` en `views/admin/AdminUsersView/UsersTable.vue`
+  muestra "Vencido" (rojo) si la fecha pasó; el filtro tiene la opción `expired`.
+
+### Valoraciones (`components/assessment/`)
+- `CheckpointForm.vue` lo usan la alumna (`views/dashboard/ProgressView`) y el admin
+  (`views/admin/AdminAssessmentView`). Recibe la prop `uploadPhoto(file)` porque cada lado
+  sube a un endpoint distinto.
+- Peso + las 10 medidas son **obligatorios** (`essential: true` en
+  `utils/assessmentMetrics.ts`); el backend también lo valida. % grasa, % músculo, pruebas
+  físicas y fotos son **opcionales**.
+- Fotos: 3 poses (`PHOTO_POSES`), privadas; la `url` firmada viene del backend en cada lectura.
+  `AssessmentPhotoGallery.vue` las muestra por mes.
+
+### Recetas
+- Admin › Recetas usa `views/admin/AdminRecipesView.vue` (formulario paso a paso), **no** el
+  genérico `AdminEntityView.vue`.
+- Ingredientes y pasos se escriben uno por línea; se limpian viñetas y números al guardar.
+- Vista de la alumna: `views/dashboard/RecipesView.vue`. La carpeta `RecipesView/` es un mock
+  viejo, excluido del type-check y sin ruta: no la uses.
+
+### Avisos por correo
+Al publicar una receta o una clase grabada el admin ve la casilla "Avisar por correo a las
+alumnas activas" (marcada al crear, desmarcada al editar). Se envía `notify: true` y el
+backend anuncia una sola vez (`announcedAt`). Si `announcedAt` ya existe, la UI no ofrece la
+casilla.
+
+### Editor genérico (`AdminEntityView.vue`)
+Lo usan Calendario, Logros y Comentarios. El estado vacío solo aplica en modo `readonly`
+(si no, no se podría crear el primer registro) y los errores al guardar van en `saveError`,
+junto al formulario.
