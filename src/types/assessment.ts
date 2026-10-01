@@ -34,6 +34,15 @@ export interface AssessmentEvaluacion {
   saltosCuerda: number | null
 }
 
+export type AssessmentPhotoPose = 'frente' | 'perfil' | 'espalda'
+
+export interface AssessmentPhoto {
+  pose: AssessmentPhotoPose
+  publicId: string
+  /** URL firmada temporal; la arma el backend al leer. */
+  url?: string
+}
+
 export interface AssessmentCheckpoint {
   _id: string
   monthIndex: number
@@ -41,6 +50,7 @@ export interface AssessmentCheckpoint {
   composicion: AssessmentComposicion
   medidas: AssessmentMedidas
   evaluacion: AssessmentEvaluacion
+  photos?: AssessmentPhoto[]
 }
 
 export interface AssessmentProfile {
@@ -70,4 +80,5 @@ export interface CheckpointPayload {
   composicion: Partial<AssessmentComposicion>
   medidas: Partial<AssessmentMedidas>
   evaluacion: Partial<AssessmentEvaluacion>
+  photos: { pose: AssessmentPhotoPose; publicId: string }[]
 }

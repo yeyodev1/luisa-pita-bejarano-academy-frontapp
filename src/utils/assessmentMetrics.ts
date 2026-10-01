@@ -1,4 +1,8 @@
-import type { AssessmentCheckpoint, PhysicalAssessment } from '@/types/assessment'
+import type {
+  AssessmentCheckpoint,
+  AssessmentPhotoPose,
+  PhysicalAssessment,
+} from '@/types/assessment'
 
 export type MetricGroup = 'composicion' | 'medidas' | 'evaluacion'
 
@@ -9,7 +13,7 @@ export interface MetricDef {
   group: MetricGroup
   /** Dirección que cuenta como mejora para colorear deltas */
   betterWhen: 'down' | 'up'
-  /** Se pide siempre; el resto queda plegado para no abrumar. */
+  /** Obligatorio (peso y medidas); el resto queda plegado y es opcional. */
   essential?: boolean
 }
 
@@ -30,16 +34,16 @@ export const METRIC_SECTIONS: MetricSection[] = [
   {
     title: 'Medidas corporales',
     metrics: [
-      { key: 'busto', label: 'Busto', unit: 'cm', group: 'medidas', betterWhen: 'down' },
+      { key: 'busto', label: 'Busto', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
       { key: 'cintura', label: 'Cintura', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
-      { key: 'abdomen', label: 'Abdomen', unit: 'cm', group: 'medidas', betterWhen: 'down' },
+      { key: 'abdomen', label: 'Abdomen', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
       { key: 'cadera', label: 'Cadera', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
-      { key: 'brazoDer', label: 'Brazo derecho', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'brazoIzq', label: 'Brazo izquierdo', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'musloDer', label: 'Muslo derecho', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'musloIzq', label: 'Muslo izquierdo', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'pantorrillaDer', label: 'Pantorrilla derecha', unit: 'cm', group: 'medidas', betterWhen: 'down' },
-      { key: 'pantorrillaIzq', label: 'Pantorrilla izquierda', unit: 'cm', group: 'medidas', betterWhen: 'down' },
+      { key: 'brazoDer', label: 'Brazo derecho', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
+      { key: 'brazoIzq', label: 'Brazo izquierdo', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
+      { key: 'musloDer', label: 'Muslo derecho', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
+      { key: 'musloIzq', label: 'Muslo izquierdo', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
+      { key: 'pantorrillaDer', label: 'Pantorrilla derecha', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
+      { key: 'pantorrillaIzq', label: 'Pantorrilla izquierda', unit: 'cm', group: 'medidas', betterWhen: 'down', essential: true },
     ],
   },
   {
@@ -135,3 +139,9 @@ export function hasCheckpointInMonth(
     )
   })
 }
+
+export const PHOTO_POSES: { pose: AssessmentPhotoPose; label: string; hint: string }[] = [
+  { pose: 'frente', label: 'De frente', hint: 'Brazos a los costados' },
+  { pose: 'perfil', label: 'De perfil', hint: 'Lado derecho' },
+  { pose: 'espalda', label: 'De espalda', hint: 'Misma postura' },
+]

@@ -95,6 +95,15 @@ class ContentService extends APIBase {
     return this.post<ApiResponse<PhysicalAssessment>>(`${ROOT}/my-assessment/checkpoints`, payload)
   }
 
+  uploadMyAssessmentPhoto(file: File) {
+    const formData = new FormData()
+    formData.append('image', file)
+    return this.post<ApiResponse<{ publicId: string; url: string }>>(
+      `${ROOT}/my-assessment/photos`,
+      formData,
+    )
+  }
+
   updateMyAssessmentCheckpoint(checkpointId: string, payload: CheckpointPayload) {
     return this.put<ApiResponse<PhysicalAssessment>>(
       `${ROOT}/my-assessment/checkpoints/${checkpointId}`,

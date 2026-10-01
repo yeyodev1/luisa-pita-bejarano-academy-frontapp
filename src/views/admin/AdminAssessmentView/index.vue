@@ -12,6 +12,7 @@ import { checkpointLabel, sortedCheckpoints } from '@/utils/assessmentMetrics'
 import AssessmentProfileForm from '@/components/assessment/AssessmentProfileForm.vue'
 import CheckpointForm from '@/components/assessment/CheckpointForm.vue'
 import AssessmentComparisonTable from '@/components/assessment/AssessmentComparisonTable.vue'
+import AssessmentPhotoGallery from '@/components/assessment/AssessmentPhotoGallery.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -122,6 +123,11 @@ async function deleteCheckpoint(checkpoint: AssessmentCheckpoint) {
   }
 }
 
+async function uploadPhoto(file: File) {
+  const res = await adminContentService.uploadAssessmentPhoto(userId.value, file)
+  return res.data.data
+}
+
 function goBack() {
   router.push({ name: 'admin-users' })
 }
@@ -174,6 +180,7 @@ onMounted(fetchAssessment)
           :checkpoint="editingCheckpoint"
           :suggested-month-index="suggestedMonthIndex"
           :saving="savingCheckpoint"
+          :upload-photo="uploadPhoto"
           @submit="submitCheckpoint"
           @cancel="cancelForm"
         />
@@ -188,6 +195,8 @@ onMounted(fetchAssessment)
           @edit="openEdit"
           @delete="deleteCheckpoint"
         />
+        <h2 class="aav__card-title aav__card-title--photos">Fotos de progreso</h2>
+        <AssessmentPhotoGallery :assessment="assessment" />
       </section>
 
       <div v-else-if="!showForm" class="aav__empty">
@@ -208,6 +217,10 @@ onMounted(fetchAssessment)
 </template>
 
 <style lang="scss" scoped>
+.aav__card-title--photos {
+  margin-top: 2rem;
+}
+
 .aav {
   display: flex;
   flex-direction: column;
