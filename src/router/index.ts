@@ -434,8 +434,7 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Admin - Calendario | Luisa Pita Bejarano' },
       },
       {
-        path: 'contenido/recetas', name: 'admin-recipes', component: () => import('@/views/admin/AdminEntityView.vue'),
-        props: { kind: 'recipes', title: 'Recetas', assetField: 'cover', assetCategory: 'recipes', fields: [{ key: 'title', label: 'Título', required: true }, { key: 'slug', label: 'Slug (opcional)' }, { key: 'summary', label: 'Resumen' }, { key: 'description', label: 'Descripción', type: 'textarea' }, { key: 'ingredients', label: 'Ingredientes (uno por línea)', type: 'textarea', list: true }, { key: 'instructions', label: 'Pasos (uno por línea)', type: 'textarea', list: true }, { key: 'prepMinutes', label: 'Minutos de preparación', type: 'number' }, { key: 'cookMinutes', label: 'Minutos de cocción', type: 'number' }, { key: 'servings', label: 'Porciones', type: 'number' }, { key: 'order', label: 'Orden', type: 'number' }, { key: 'status', label: 'Estado', type: 'select', required: true, options: [{ value: 'draft', label: 'Borrador' }, { value: 'published', label: 'Publicada' }, { value: 'archived', label: 'Archivada' }] }] },
+        path: 'contenido/recetas', name: 'admin-recipes', component: () => import('@/views/admin/AdminRecipesView.vue'),
         meta: { title: 'Admin - Recetas | Luisa Pita Bejarano' },
       },
       {
