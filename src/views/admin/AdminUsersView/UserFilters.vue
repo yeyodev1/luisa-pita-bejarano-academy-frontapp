@@ -24,6 +24,7 @@ const statusOptions = [
   { value: 'none', label: 'Sin suscripción' },
   { value: 'pending', label: 'Pendiente' },
   { value: 'active', label: 'Activo' },
+  { value: 'expired', label: 'Vencido' },
 ]
 
 const hasFilters = computed(() => props.role !== '' || props.subscriptionStatus !== '')
