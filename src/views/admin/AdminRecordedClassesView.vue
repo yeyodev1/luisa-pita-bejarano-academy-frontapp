@@ -23,7 +23,11 @@ const emptyForm = () => ({
   recordingUrl: '',
   notesUrl: '',
   status: 'published' as RecordedClass['status'],
+  notify: true,
 })
+
+/** Ya se avisó por correo de la clase que se edita (no se repite el aviso). */
+const alreadyAnnounced = ref(false)
 
 const form = ref(emptyForm())
 
@@ -66,6 +70,10 @@ const isFormValid = computed(() =>
   isValidUrl(form.value.recordingUrl.trim()),
 )
 
+const willNotify = computed(
+  () => form.value.status === 'published' && form.value.notify && !alreadyAnnounced.value,
+)
+
 // ── data ──────────────────────────────────────────────────────────────────────
 async function fetchClasses() {
   loading.value = true
@@ -83,6 +91,7 @@ async function fetchClasses() {
 // ── form actions ──────────────────────────────────────────────────────────────
 function openCreate() {
   editingId.value = null
+  alreadyAnnounced.value = false
   form.value = emptyForm()
   showForm.value = true
   success.value = ''
@@ -99,7 +108,9 @@ function openEdit(cls: RecordedClass) {
     recordingUrl: cls.recordingUrl,
     notesUrl: cls.notesUrl ?? '',
     status: cls.status ?? 'published',
+    notify: false,
   }
+  alreadyAnnounced.value = Boolean(cls.announcedAt)
   showForm.value = true
   success.value = ''
   error.value = ''
@@ -124,14 +135,20 @@ async function submitForm() {
       recordingUrl: form.value.recordingUrl.trim(),
       notesUrl: form.value.notesUrl.trim(),
       status: form.value.status,
+      notify: willNotify.value,
     }
+    const notified = willNotify.value
     if (editingId.value) {
       await adminContentService.updateRecordedClass(editingId.value, payload)
       success.value = 'Clase actualizada correctamente.'
     } else {
       await adminContentService.createRecordedClass(payload as Parameters<typeof adminContentService.createRecordedClass>[0])
-      success.value = 'Clase grabada registrada correctamente.'
+      success.value =
+        form.value.status === 'published'
+          ? 'Clase grabada publicada: ya la ven las alumnas.'
+          : 'Clase guardada como borrador (las alumnas aún no la ven).'
     }
+    if (notified) success.value += ' Estamos enviando el correo a las alumnas activas.'
     showForm.value = false
     editingId.value = null
     form.value = emptyForm()
@@ -140,6 +157,24 @@ async function submitForm() {
     error.value = (e as { message?: string }).message || 'Ocurrió un error al guardar.'
   } finally {
     saving.value = false
+  }
+}
+
+async function publishClass(cls: RecordedClass) {
+  const notify = !cls.announcedAt && confirm(
+    `¿Publicar "${cls.title}" y avisar por correo a las alumnas activas?\n\nAceptar: publicar y enviar correo.\nCancelar: solo publicar, sin correo.`,
+  )
+  deleting.value = cls._id
+  try {
+    await adminContentService.updateRecordedClass(cls._id, { status: 'published', notify })
+    success.value = notify
+      ? 'Clase publicada. Estamos enviando el correo a las alumnas activas.'
+      : 'Clase publicada: ya la ven las alumnas.'
+    await fetchClasses()
+  } catch (e: unknown) {
+    error.value = (e as { message?: string }).message || 'No se pudo publicar.'
+  } finally {
+    deleting.value = null
   }
 }
 
@@ -296,6 +331,20 @@ onMounted(fetchClasses)
               </select>
             </div>
 
+            <!-- Aviso por correo -->
+            <div v-if="form.status === 'published'" class="rc-form__field">
+              <p v-if="alreadyAnnounced" class="rc-form__hint">
+                <i class="fa-solid fa-envelope-circle-check" /> Ya se avisó por correo a las alumnas de esta clase.
+              </p>
+              <label v-else class="rc-form__notify">
+                <input v-model="form.notify" type="checkbox" />
+                <span>
+                  <strong>Avisar por correo a las alumnas activas</strong>
+                  <small>Les llega un correo con el enlace a la clase grabada. Se envía una sola vez.</small>
+                </span>
+              </label>
+            </div>
+
             <!-- Actions -->
             <div class="rc-form__actions">
               <button type="button" class="rc-admin__btn rc-admin__btn--ghost" @click="cancelForm">
@@ -385,6 +434,15 @@ onMounted(fetchClasses)
               </td>
               <td class="rc-table__actions">
                 <button
+                  v-if="cls.status !== 'published'"
+                  class="rc-admin__btn rc-admin__btn--icon rc-admin__btn--publish"
+                  title="Publicar"
+                  :disabled="deleting === cls._id"
+                  @click="publishClass(cls)"
+                >
+                  <i class="fa-solid fa-paper-plane" />
+                </button>
+                <button
                   class="rc-admin__btn rc-admin__btn--icon"
                   title="Editar"
                   @click="openEdit(cls)"
@@ -410,6 +468,45 @@ onMounted(fetchClasses)
 </template>
 
 <style lang="scss" scoped>
+.rc-form__notify {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba($lpb-green-deep, 0.2);
+  border-radius: 0.75rem;
+  background: rgba($lpb-green, 0.06);
+  cursor: pointer;
+
+  input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.15rem;
+    accent-color: $lpb-green-deep;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-family: $font-sans;
+  }
+
+  strong {
+    font-size: 0.9rem;
+    color: $lpb-black;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: $lpb-muted;
+  }
+}
+
+.rc-admin__btn--publish {
+  color: $lpb-green-deep;
+}
+
 .rc-admin {
   display: flex;
   flex-direction: column;

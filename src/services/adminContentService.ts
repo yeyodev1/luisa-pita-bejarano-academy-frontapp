@@ -144,11 +144,14 @@ class AdminContentService extends APIBase {
     return this.get<ApiResponse<RecordedClass>>(`admin/recorded-classes/${id}`)
   }
 
-  createRecordedClass(payload: Omit<RecordedClass, '_id' | 'createdAt' | 'updatedAt'>) {
+  createRecordedClass(payload: Omit<RecordedClass, '_id' | 'createdAt' | 'updatedAt'> & { notify?: boolean }) {
     return this.post<ApiResponse<RecordedClass>>('admin/recorded-classes', payload)
   }
 
-  updateRecordedClass(id: string, payload: Partial<Omit<RecordedClass, '_id' | 'createdAt' | 'updatedAt'>>) {
+  updateRecordedClass(
+    id: string,
+    payload: Partial<Omit<RecordedClass, '_id' | 'createdAt' | 'updatedAt'>> & { notify?: boolean },
+  ) {
     return this.put<ApiResponse<RecordedClass>>(`admin/recorded-classes/${id}`, payload)
   }
 
@@ -175,6 +178,15 @@ class AdminContentService extends APIBase {
 
   addAssessmentCheckpoint(userId: string, payload: CheckpointPayload) {
     return this.post<ApiResponse<PhysicalAssessment>>(`admin/assessments/${userId}/checkpoints`, payload)
+  }
+
+  uploadAssessmentPhoto(userId: string, file: File) {
+    const formData = new FormData()
+    formData.append('image', file)
+    return this.post<ApiResponse<{ publicId: string; url: string }>>(
+      `admin/assessments/${userId}/photos`,
+      formData,
+    )
   }
 
   updateAssessmentCheckpoint(userId: string, checkpointId: string, payload: CheckpointPayload) {

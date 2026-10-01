@@ -32,12 +32,29 @@ function formatDate(iso: string | null) {
   })
 }
 
+/**
+ * El backend deja subscriptionStatus en 'active' aunque accessUntil ya pasó;
+ * con fecha vencida el alumno no tiene acceso, así que no puede verse "Activo".
+ */
+function isExpired(user: AdminUser) {
+  if (!user.accessUntil) return false
+  return new Date(user.accessUntil).getTime() <= Date.now()
+}
+
+function effectiveStatus(user: AdminUser) {
+  if (user.subscriptionStatus === 'active' && isExpired(user)) return 'expired'
+  if (user.subscriptionStatus === 'canceled') return 'expired'
+  return user.subscriptionStatus
+}
+
 function statusLabel(status: string) {
   switch (status) {
     case 'active':
       return 'Activo'
     case 'pending':
       return 'Pendiente'
+    case 'expired':
+      return 'Vencido'
     default:
       return 'Sin suscripción'
   }
@@ -118,21 +135,28 @@ const isCurrentUser = computed(() => (id: string) => id === userStore.id)
               <td>
                 <span
                   class="admin-users__badge"
-                  :class="`admin-users__badge--${user.subscriptionStatus}`"
+                  :class="`admin-users__badge--${effectiveStatus(user)}`"
                 >
                   <i
                     class="fa-solid"
                     :class="{
-                      'fa-circle-check': user.subscriptionStatus === 'active',
-                      'fa-clock': user.subscriptionStatus === 'pending',
-                      'fa-circle-xmark': user.subscriptionStatus === 'none',
+                      'fa-circle-check': effectiveStatus(user) === 'active',
+                      'fa-clock': effectiveStatus(user) === 'pending',
+                      'fa-circle-xmark': effectiveStatus(user) === 'none',
+                      'fa-calendar-xmark': effectiveStatus(user) === 'expired',
                     }"
                   />
-                  {{ statusLabel(user.subscriptionStatus) }}
+                  {{ statusLabel(effectiveStatus(user)) }}
                 </span>
               </td>
               <td>
-                <span class="admin-users__access" :class="{ 'admin-users__access--none': !user.accessUntil }">
+                <span
+                  class="admin-users__access"
+                  :class="{
+                    'admin-users__access--none': !user.accessUntil,
+                    'admin-users__access--expired': isExpired(user),
+                  }"
+                >
                   {{ formatDate(user.accessUntil) }}
                 </span>
               </td>

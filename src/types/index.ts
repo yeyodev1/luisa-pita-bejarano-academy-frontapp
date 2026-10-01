@@ -119,6 +119,7 @@ export interface Recipe {
   order: number
   cover?: MediaAsset
   publishedAt?: string | null
+  announcedAt?: string | null
 }
 
 export interface EarnedAchievement {
@@ -186,6 +187,8 @@ export interface RecordedClass {
   recordingUrl: string
   notesUrl?: string
   status?: ContentStatus
+  /** Cuándo se avisó por correo a las alumnas; null = todavía no. */
+  announcedAt?: string | null
   createdAt?: string
   updatedAt?: string
 }

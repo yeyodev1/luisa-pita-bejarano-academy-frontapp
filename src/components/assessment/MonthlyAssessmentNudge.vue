@@ -55,8 +55,8 @@ function goRegister() {
         <h2 class="nudge__title">¡Es hora de medir tu progreso!</h2>
         <p class="nudge__text">
           Aún no registras tus medidas de <strong>{{ monthName }}</strong
-          >. Toma 3 minutos: peso, medidas y pruebas físicas. Así verás cuánto has avanzado mes a
-          mes.
+          >. Toma tu báscula y tu cinta métrica: el <strong>peso y las medidas son
+          obligatorios</strong>, y las fotos son opcionales. Así verás cuánto has avanzado mes a mes.
         </p>
         <div class="nudge__actions">
           <button class="nudge__btn nudge__btn--primary" type="button" @click="goRegister">

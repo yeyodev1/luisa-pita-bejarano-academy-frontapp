@@ -12,6 +12,7 @@ import { sortedCheckpoints } from '@/utils/assessmentMetrics'
 import AssessmentProfileForm from '@/components/assessment/AssessmentProfileForm.vue'
 import CheckpointForm from '@/components/assessment/CheckpointForm.vue'
 import AssessmentComparisonTable from '@/components/assessment/AssessmentComparisonTable.vue'
+import AssessmentPhotoGallery from '@/components/assessment/AssessmentPhotoGallery.vue'
 
 const assessment = ref<PhysicalAssessment | null>(null)
 const loading = ref(true)
@@ -97,6 +98,11 @@ async function submitCheckpoint(payload: CheckpointPayload) {
   }
 }
 
+async function uploadPhoto(file: File) {
+  const res = await contentService.uploadMyAssessmentPhoto(file)
+  return res.data.data
+}
+
 const route = useRoute()
 
 onMounted(async () => {
@@ -160,6 +166,7 @@ onMounted(async () => {
           :checkpoint="editingCheckpoint"
           :suggested-month-index="suggestedMonthIndex"
           :saving="savingCheckpoint"
+          :upload-photo="uploadPhoto"
           @submit="submitCheckpoint"
           @cancel="cancelForm"
         />
@@ -168,6 +175,8 @@ onMounted(async () => {
       <section v-if="assessment && checkpoints.length" class="mpv__card">
         <h2 class="mpv__card-title">Comparativa mensual</h2>
         <AssessmentComparisonTable :assessment="assessment" editable @edit="openEdit" />
+        <h2 class="mpv__card-title mpv__card-title--photos">Fotos de progreso</h2>
+        <AssessmentPhotoGallery :assessment="assessment" />
       </section>
 
       <div v-else-if="!showForm" class="mpv__empty">
@@ -176,8 +185,8 @@ onMounted(async () => {
         </div>
         <h3 class="mpv__empty-title">Aún no tienes registros</h3>
         <p class="mpv__empty-text">
-          Empieza con tu evaluación inicial: peso, medidas y pruebas físicas. Cada mes verás tu
-          progreso aquí.
+          Empieza con tu evaluación inicial: peso y medidas (obligatorios) y, si quieres, tus fotos.
+          Cada mes verás tu progreso aquí.
         </p>
         <button class="mpv__btn" type="button" @click="openCreate">
           <i class="fa-solid fa-plus" />
@@ -189,6 +198,10 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
+.mpv__card-title--photos {
+  margin-top: 2rem;
+}
+
 .mpv {
   display: flex;
   flex-direction: column;

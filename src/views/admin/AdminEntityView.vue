@@ -10,6 +10,8 @@ const props = defineProps<{ kind: ContentKind; title: string; fields: Field[]; r
 const items = ref<Record<string, unknown>[]>([])
 const loading = ref(false)
 const error = ref('')
+/** Error al guardar: se muestra junto al formulario sin ocultarlo. */
+const saveError = ref('')
 const editing = ref<Record<string, unknown> | null>(null)
 const form = reactive<Record<string, string>>({})
 const asset = ref<MediaAsset>()
@@ -84,6 +86,7 @@ async function load() {
 async function save() {
   if (props.kind === 'comments') return
   loading.value = true
+  saveError.value = ''
   try {
     const previousAsset = originalAsset.value
     if (editing.value) await adminContentService.update(props.kind, idOf(editing.value), payload())
@@ -93,8 +96,8 @@ async function save() {
     }
     reset()
     await load()
-  } catch (saveError) {
-    error.value = (saveError as { message?: string }).message || 'No se pudo guardar.'
+  } catch (err) {
+    saveError.value = (err as { message?: string }).message || 'No se pudo guardar.'
     loading.value = false
   }
 }
@@ -145,7 +148,7 @@ watch(() => props.kind, () => { reset(); load() })
 
 <template>
   <div class="entity"><div class="entity__top"><div><h2>{{ title }}</h2><p>{{ items.length }} registros</p></div><button v-if="!readonly" @click="reset">Nuevo</button></div>
-    <ApiState :loading="loading&&!items.length" :error="error" :empty="!items.length" @retry="load">
+    <ApiState :loading="loading&&!items.length" :error="error" :empty="readonly && !items.length" @retry="load">
       <div class="entity__layout"><div class="list"><article v-for="item in items" :key="idOf(item)"><div><strong>{{ itemTitle(item) }}</strong><small>{{ itemMeta(item) }}</small></div><span>
         <template v-if="kind==='comments'"><button @click="moderate(item,'published')">Publicar</button><button @click="moderate(item,'rejected')">Rechazar</button><button @click="moderate(item,'pending')">Pendiente</button></template>
         <template v-if="kind==='achievements'"><button @click="award(item)">Otorgar</button><button @click="revoke(item)">Revocar</button></template>
@@ -153,7 +156,7 @@ watch(() => props.kind, () => { reset(); load() })
       </span></article></div>
       <form v-if="!readonly" class="editor" @submit.prevent="save"><h3>{{ heading }}</h3><label v-for="field in fields" :key="field.key"><span>{{ field.label }}</span><textarea v-if="field.type==='textarea'" v-model="form[field.key]" :rows="field.list?5:3" :required="field.required"/><select v-else-if="field.type==='select'" v-model="form[field.key]" :required="field.required"><option v-for="option in field.options" :key="option.value" :value="option.value">{{ option.label }}</option></select><input v-else v-model="form[field.key]" :type="field.type||'text'" :required="field.required"></label>
         <div v-if="assetField&&assetCategory"><MediaUploader resource-type="image" :category="assetCategory" :label="assetField==='icon'?'Subir icono':'Subir portada'" @uploaded="asset=$event"/><button v-if="asset" type="button" class="danger" @click="deleteAsset">Eliminar archivo</button></div>
-        <div class="actions"><button type="button" @click="reset">Limpiar</button><button class="primary" type="submit">Guardar</button></div>
+        <p v-if="saveError" class="danger" role="alert">{{ saveError }}</p><div class="actions"><button type="button" @click="reset">Limpiar</button><button class="primary" type="submit">Guardar</button></div>
       </form></div>
     </ApiState>
   </div>
