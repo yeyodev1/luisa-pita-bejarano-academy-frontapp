@@ -9,7 +9,7 @@ import esLocale from '@fullcalendar/core/locales/es'
 import { useDashboardStore } from '@/stores/dashboard'
 
 const ECUADOR_TIMEZONE = 'America/Guayaquil'
-const CLASS_MEETING_URL = 'https://meet.google.com/tik-vsks-pbc'
+const CLASS_MEETING_URL = 'https://us06web.zoom.us/j/83322853984?pwd=7wX7AFxC5vbEa6939OvOfWO9uR54xc.1'
 const CAFECITO_MEETING_URL = 'https://meet.google.com/evz-dpuc-nho'
 const store = useDashboardStore()
 
@@ -25,6 +25,8 @@ const weeklySchedule = [
     color: '#536d59',
     icon: 'fa-person-running',
     meetingUrl: CLASS_MEETING_URL,
+    platform: 'Zoom',
+    access: 'ID 833 2285 3984 · Código 353621',
   },
   {
     id: 'cafecito-luisa',
@@ -37,6 +39,8 @@ const weeklySchedule = [
     color: '#a66f32',
     icon: 'fa-mug-hot',
     meetingUrl: CAFECITO_MEETING_URL,
+    platform: 'Google Meet',
+    access: '',
   },
 ] as const
 
@@ -102,7 +106,7 @@ onMounted(() => store.fetchCalendar())
         <span class="calendar-hero__eyebrow">Encuentros en vivo</span>
         <h1 class="calendar-hero__title">Tu calendario semanal</h1>
         <p class="calendar-hero__description">
-          Organiza tu semana y entra a cada sesión desde el mismo enlace de Google Meet.
+          Organiza tu semana y entra a cada sesión desde su enlace fijo.
         </p>
       </div>
       <div class="calendar-hero__timezone">
@@ -130,10 +134,11 @@ onMounted(() => store.fetchCalendar())
             <h3>{{ event.title }}</h3>
             <strong>{{ event.time }}</strong>
             <small>Hora Ecuador</small>
+            <small v-if="event.access">{{ event.access }}</small>
           </div>
           <button type="button" class="schedule-card__button" @click="openMeeting(event.meetingUrl)">
             <i class="fa-solid fa-video" />
-            Abrir Google Meet
+            Abrir {{ event.platform }}
           </button>
         </article>
       </div>
@@ -155,7 +160,7 @@ onMounted(() => store.fetchCalendar())
       <FullCalendar :options="options" />
       <p class="calendar__hint">
         <i class="fa-solid fa-arrow-pointer" />
-        Selecciona una sesión para entrar directamente a Google Meet.
+        Selecciona una sesión para entrar directamente a la videollamada.
       </p>
     </section>
   </div>
