@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 import MediaUploader from "@/components/admin/MediaUploader.vue";
 import type { MediaAsset } from "@/types";
 import AdminEditorShell from "./AdminEditorShell.vue";
 import type { LessonDraft } from "./types";
+import { formatDuration } from "./useAdminCourses";
 
 const props = defineProps<{
   initialValue: LessonDraft;
   editing: boolean;
   saving: boolean;
   courseTitle: string;
+  error?: string;
   removeAsset: (asset: MediaAsset | null | undefined) => Promise<void>;
 }>();
-const emit = defineEmits<{ close: []; save: [draft: LessonDraft] }>();
+const emit = defineEmits<{
+  close: [];
+  save: [draft: LessonDraft];
+  uploading: [value: boolean];
+}>();
 const form = reactive<LessonDraft>({
   ...props.initialValue,
   materials: [...props.initialValue.materials],
@@ -29,12 +35,24 @@ async function clearAsset(kind: "video" | "thumbnail") {
   form[kind] = null;
 }
 
+/** Subidas en curso (video, miniatura, material): no se guarda ni se cierra a medias. */
+const busyUploads = ref(new Set<string>());
+const uploading = computed(() => busyUploads.value.size > 0);
+
+function trackBusy(slot: string, value: boolean) {
+  const next = new Set(busyUploads.value);
+  if (value) next.add(slot);
+  else next.delete(slot);
+  busyUploads.value = next;
+  emit("uploading", next.size > 0);
+}
+
+// El nombre se edita en la lista; si queda vacío se usa el del archivo.
 function addMaterial(asset: MediaAsset) {
-  const title = prompt(
-    "Nombre que verá la estudiante",
-    asset.originalFilename || "Material descargable",
-  )?.trim();
-  if (title) form.materials.push({ ...asset, title });
+  form.materials.push({
+    ...asset,
+    title: asset.originalFilename || "Material descargable",
+  });
 }
 
 async function removeMaterial(index: number) {
@@ -43,10 +61,20 @@ async function removeMaterial(index: number) {
 }
 
 function submit() {
-  emit("save", { ...form, materials: [...form.materials] });
+  if (uploading.value) return;
+  const materials = form.materials.map((material) => ({
+    ...material,
+    title: material.title?.trim() || material.originalFilename || "Material descargable",
+  }));
+  emit("save", { ...form, materials });
 }
 
 async function close() {
+  if (
+    uploading.value &&
+    !confirm("Hay un archivo subiéndose. Si cierras ahora se cancelará. ¿Cerrar de todos modos?")
+  )
+    return;
   await Promise.allSettled([
     props.removeAsset(form.video),
     props.removeAsset(form.thumbnail),
@@ -87,20 +115,19 @@ async function close() {
             <textarea v-model="form.content" rows="5" placeholder="Incluye puntos clave, instrucciones o recomendaciones" />
           </label>
           <label class="field">
-            <span>Estado</span>
+            <span>¿La ven las alumnas?</span>
             <select v-model="form.status">
-              <option value="draft">Borrador</option>
-              <option value="published">Publicada</option>
-              <option value="archived">Archivada</option>
+              <option value="draft">No todavía (borrador)</option>
+              <option value="published">Sí, publicada</option>
+              <option value="archived">Archivada (oculta, se conserva)</option>
             </select>
           </label>
-          <label class="field">
+          <div class="field">
             <span>Duración</span>
-            <div class="input-suffix">
-              <input v-model.number="form.durationSeconds" type="number" min="0" />
-              <span>seg</span>
-            </div>
-          </label>
+            <p class="field__static">
+              {{ form.durationSeconds ? formatDuration(form.durationSeconds) : "Se completa sola al subir el video" }}
+            </p>
+          </div>
         </div>
       </section>
 
@@ -117,13 +144,14 @@ async function close() {
             <i class="fa-solid fa-circle-play" aria-hidden="true" />
             <span>
               <strong>{{ form.video ? "Video cargado" : "Sube el video de esta clase" }}</strong>
-              <small>{{ form.video?.originalFilename || "Cloudinary procesará el archivo de forma segura" }}</small>
+              <small>{{ form.video?.originalFilename || "El video se procesa de forma segura. MP4 o MOV." }}</small>
             </span>
           </div>
           <MediaUploader
             resource-type="video"
             category="lessons"
             :label="form.video ? 'Reemplazar video' : 'Subir video'"
+            @busy="trackBusy('video', $event)"
             @uploaded="setVideo"
           />
           <button v-if="form.video" class="text-button danger" type="button" @click="clearAsset('video')">Quitar</button>
@@ -141,6 +169,7 @@ async function close() {
               resource-type="image"
               category="lessons"
               :label="form.thumbnail ? 'Reemplazar miniatura' : 'Subir miniatura'"
+              @busy="trackBusy('thumbnail', $event)"
               @uploaded="form.thumbnail = $event"
             />
             <button v-if="form.thumbnail" class="text-button danger" type="button" @click="clearAsset('thumbnail')">Quitar</button>
@@ -151,11 +180,23 @@ async function close() {
             <span>04</span>
             <div><h3>Materiales</h3><p>PDF, guía o recurso descargable.</p></div>
           </div>
-          <MediaUploader resource-type="raw" category="materials" label="Añadir material" @uploaded="addMaterial" />
+          <MediaUploader
+            resource-type="raw"
+            category="materials"
+            label="Añadir material"
+            @busy="trackBusy('material', $event)"
+            @uploaded="addMaterial"
+          />
           <ul class="materials">
             <li v-for="(material, index) in form.materials" :key="material.publicId">
               <i class="fa-solid fa-paperclip" />
-              <span>{{ material.title }}</span>
+              <input
+                v-model="material.title"
+                class="materials__name"
+                maxlength="120"
+                :placeholder="material.originalFilename || 'Nombre que verá la alumna'"
+                aria-label="Nombre que verá la alumna"
+              />
               <button type="button" aria-label="Quitar material" @click="removeMaterial(index)">
                 <i class="fa-solid fa-xmark" />
               </button>
@@ -164,9 +205,15 @@ async function close() {
         </div>
       </section>
       <footer class="editor-footer">
-        <button class="button button--quiet" type="button" @click="emit('close')">Cancelar</button>
-        <button class="button button--primary" type="submit" :disabled="saving">
-          {{ saving ? "Guardando..." : "Guardar clase" }}
+        <p v-if="error" class="editor-error editor-footer__error" role="alert">
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {{ error }}
+        </p>
+        <p v-if="uploading" class="editor-footer__hint">
+          <i class="fa-solid fa-spinner fa-spin" aria-hidden="true" /> Espera a que termine de subirse el archivo para guardar.
+        </p>
+        <button class="button button--quiet" type="button" @click="close">Cancelar</button>
+        <button class="button button--primary" type="submit" :disabled="saving || uploading">
+          {{ saving ? "Guardando..." : uploading ? "Subiendo archivo…" : "Guardar clase" }}
         </button>
       </footer>
     </form>
@@ -184,7 +231,8 @@ async function close() {
 .media-compact { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .materials { display: flex; flex-direction: column; gap: 0.4rem; list-style: none; padding: 0; margin: 0.75rem 0 0; }
 .materials li { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.65rem; border-radius: 0.6rem; background: $lpb-white; font: 0.72rem $font-sans; }
-.materials li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.materials__name { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 0.45rem; padding: 0.35rem 0.5rem; font: 0.75rem $font-sans; background: $lpb-white; }
+.field__static { margin: 0; padding: 0.78rem 0; font: 0.82rem $font-sans; color: $lpb-graphite; }
 .materials li button { width: 26px; height: 26px; border-radius: 50%; color: $alert-error; }
 @media (max-width: 760px) { .form-section--split { flex-direction: column; } }
 </style>

@@ -80,3 +80,13 @@ casilla.
 Lo usan Calendario, Logros y Comentarios. El estado vacío solo aplica en modo `readonly`
 (si no, no se podría crear el primer registro) y los errores al guardar van en `saveError`,
 junto al formulario.
+
+### Clases grabadas automáticas
+Las clases de Zoom las publica el backend (webhook). En Admin › Clases grabadas llevan la
+etiqueta "Automática (Zoom)" (`source === 'zoom'`). Subir a mano sigue disponible.
+
+### Backoffice (`views/admin/AdminBackofficeView.vue`, ruta `admin-backoffice`)
+Dos pestañas: **Solicitudes** (el equipo del cliente pide cambios; el técnico responde con
+notas y cambia el estado) y **Servicios y accesos** (inventario con costo mensual estimado,
+pendientes y renovaciones en 30 días). Sin contraseñas: solo a nombre de qué cuenta está cada
+servicio. Servicio de API: `services/backofficeService.ts`.

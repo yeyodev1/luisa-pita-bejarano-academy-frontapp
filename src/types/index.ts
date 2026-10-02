@@ -104,6 +104,26 @@ export interface CalendarEvent {
   cover?: MediaAsset
 }
 
+export interface WeeklySession {
+  _id: string
+  key: string
+  title: string
+  /** 0 = domingo … 6 = sábado */
+  days: number[]
+  /** Hora Ecuador "HH:mm" */
+  startTime: string
+  endTime: string
+  meetingUrl: string
+  meetingId: string
+  passcode: string
+  color: string
+  icon: string
+  active: boolean
+  reminders: boolean
+  isMainClass: boolean
+  order: number
+}
+
 export interface Recipe {
   _id: string
   slug: string
@@ -189,6 +209,8 @@ export interface RecordedClass {
   status?: ContentStatus
   /** Cuándo se avisó por correo a las alumnas; null = todavía no. */
   announcedAt?: string | null
+  /** 'zoom' = la publicó sola el webhook de grabación de Zoom. */
+  source?: 'manual' | 'zoom'
   createdAt?: string
   updatedAt?: string
 }

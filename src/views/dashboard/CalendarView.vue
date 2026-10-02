@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import type { CalendarOptions, EventClickArg, EventInput } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -7,44 +7,57 @@ import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
 import { useDashboardStore } from '@/stores/dashboard'
+import { contentService } from '@/services/contentService'
+import type { WeeklySession } from '@/types'
 
 const ECUADOR_TIMEZONE = 'America/Guayaquil'
-const CLASS_MEETING_URL = 'https://us06web.zoom.us/j/83322853984?pwd=7wX7AFxC5vbEa6939OvOfWO9uR54xc.1'
-const CAFECITO_MEETING_URL = 'https://meet.google.com/evz-dpuc-nho'
+const DAY_NAMES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 const store = useDashboardStore()
+const sessions = ref<WeeklySession[]>([])
 
-const weeklySchedule = [
-  {
-    id: 'luisa-class',
-    title: 'Clase de Luisa Pita Bejarano',
-    days: 'Lunes a viernes',
-    time: '6:00 a. m. - 7:00 a. m.',
-    daysOfWeek: [1, 2, 3, 4, 5],
-    startTime: '06:00:00',
-    endTime: '07:00:00',
-    color: '#536d59',
-    icon: 'fa-person-running',
-    meetingUrl: CLASS_MEETING_URL,
-    platform: 'Zoom',
-    access: 'ID 833 2285 3984 · Código 353621',
-  },
-  {
-    id: 'cafecito-luisa',
-    title: 'Cafecito con Luisa Pita Bejarano',
-    days: 'Todos los lunes',
-    time: '4:00 p. m. - 5:00 p. m.',
-    daysOfWeek: [1],
-    startTime: '16:00:00',
-    endTime: '17:00:00',
-    color: '#a66f32',
-    icon: 'fa-mug-hot',
-    meetingUrl: CAFECITO_MEETING_URL,
-    platform: 'Google Meet',
-    access: '',
-  },
-] as const
+function formatTime(time: string) {
+  const [h = 0, m = 0] = time.split(':').map(Number)
+  const hour = h % 12 === 0 ? 12 : h % 12
+  return `${hour}:${String(m).padStart(2, '0')} ${h < 12 ? 'a. m.' : 'p. m.'}`
+}
 
-const recurringEvents: EventInput[] = weeklySchedule.map((event) => ({
+function daysLabel(days: number[]) {
+  const set = new Set(days)
+  if (set.size === 7) return 'Todos los días'
+  if (set.size === 5 && [1, 2, 3, 4, 5].every((d) => set.has(d))) return 'Lunes a viernes'
+  if (set.size === 1) return `Todos los ${DAY_NAMES[days[0] ?? 0]}${days[0] === 6 || days[0] === 0 ? 's' : ''}`
+  const names = [1, 2, 3, 4, 5, 6, 0].filter((d) => set.has(d)).map((d) => DAY_NAMES[d])
+  const label = names.join(', ')
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+function platform(url: string) {
+  if (url.includes('zoom.us')) return 'Zoom'
+  if (url.includes('meet.google.com')) return 'Google Meet'
+  return 'videollamada'
+}
+
+const weeklySchedule = computed(() =>
+  sessions.value.map((session) => ({
+    id: session._id,
+    title: session.title,
+    days: daysLabel(session.days),
+    time: `${formatTime(session.startTime)} - ${formatTime(session.endTime)}`,
+    daysOfWeek: session.days,
+    startTime: `${session.startTime}:00`,
+    endTime: `${session.endTime}:00`,
+    color: session.color,
+    icon: session.icon || 'fa-video',
+    meetingUrl: session.meetingUrl,
+    platform: platform(session.meetingUrl),
+    access: [
+      session.meetingId ? `ID ${session.meetingId}` : '',
+      session.passcode ? `Código ${session.passcode}` : '',
+    ].filter(Boolean).join(' · '),
+  })),
+)
+
+const recurringEvents = computed<EventInput[]>(() => weeklySchedule.value.map((event) => ({
   id: event.id,
   title: event.title,
   daysOfWeek: [...event.daysOfWeek],
@@ -53,10 +66,19 @@ const recurringEvents: EventInput[] = weeklySchedule.map((event) => ({
   backgroundColor: event.color,
   borderColor: event.color,
   extendedProps: { meetingUrl: event.meetingUrl },
-}))
+})))
+
+async function fetchWeeklySchedule() {
+  try {
+    const response = await contentService.getWeeklySchedule()
+    sessions.value = response.data.data
+  } catch {
+    sessions.value = []
+  }
+}
 
 const calendarEvents = computed<EventInput[]>(() => [
-  ...recurringEvents,
+  ...recurringEvents.value,
   ...store.calendarEvents.map((event) => ({
     id: event._id,
     title: event.title,
@@ -96,7 +118,10 @@ const options = computed<CalendarOptions>(() => ({
   eventClick: openEventMeeting,
 }))
 
-onMounted(() => store.fetchCalendar())
+onMounted(() => {
+  store.fetchCalendar()
+  fetchWeeklySchedule()
+})
 </script>
 
 <template>

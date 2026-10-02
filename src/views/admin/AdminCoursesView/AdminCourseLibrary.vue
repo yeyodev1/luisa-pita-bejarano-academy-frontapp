@@ -8,6 +8,7 @@ const emit = defineEmits<{
   edit: [course: Course];
   remove: [course: Course];
   move: [index: number, direction: number];
+  togglePublish: [course: Course];
   refresh: [];
 }>();
 </script>
@@ -46,6 +47,16 @@ const emit = defineEmits<{
             <i class="fa-solid fa-chevron-right course-card__arrow" aria-hidden="true" />
           </button>
           <div class="course-card__actions">
+            <button
+              class="publish-toggle"
+              :class="{ 'publish-toggle--on': course.status === 'published' }"
+              type="button"
+              :aria-label="course.status === 'published' ? 'Ocultar curso' : 'Publicar curso'"
+              @click="emit('togglePublish', course)"
+            >
+              <i class="fa-solid" :class="course.status === 'published' ? 'fa-eye-slash' : 'fa-paper-plane'" aria-hidden="true" />
+              {{ course.status === "published" ? "Ocultar" : "Publicar" }}
+            </button>
             <button type="button" :disabled="index === 0" aria-label="Subir curso" @click="emit('move', index, -1)"><i class="fa-solid fa-arrow-up" /></button>
             <button type="button" :disabled="index === courses.length - 1" aria-label="Bajar curso" @click="emit('move', index, 1)"><i class="fa-solid fa-arrow-down" /></button>
             <button type="button" aria-label="Editar curso" @click="emit('edit', course)"><i class="fa-solid fa-pen" /></button>
@@ -111,6 +122,11 @@ const emit = defineEmits<{
 .course-card__actions button:hover { background: $lpb-cream; color: $lpb-black; }
 .course-card__actions button:disabled { opacity: 0.25; cursor: not-allowed; }
 .danger { color: $alert-error !important; }
+.course-card__actions .publish-toggle {
+  width: auto; margin-right: auto; padding: 0 0.7rem; gap: 0.35rem; border-radius: 999px;
+  background: rgba($lpb-green, 0.15); color: $lpb-green-deep; font: 600 0.68rem $font-sans;
+}
+.course-card__actions .publish-toggle--on { background: $lpb-cream; color: $lpb-graphite; }
 @media (max-width: 760px) {
   .library__header { align-items: flex-start; gap: 0.75rem; flex-direction: column; }
   .workspace { flex-direction: column; }

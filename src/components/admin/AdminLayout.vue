@@ -15,7 +15,8 @@ const showLogoutConfirm = ref(false)
 const menuItems = [
   { name: 'admin-courses', label: 'Cursos y clases', icon: 'book' },
   { name: 'admin-recorded-classes', label: 'Clases grabadas', icon: 'film' },
-  { name: 'admin-calendar', label: 'Calendario', icon: 'calendar' },
+  { name: 'admin-weekly-schedule', label: 'Horario semanal', icon: 'clock' },
+  { name: 'admin-calendar', label: 'Eventos especiales', icon: 'calendar' },
   { name: 'admin-recipes', label: 'Recetas', icon: 'utensils' },
   { name: 'admin-achievements', label: 'Logros', icon: 'trophy' },
   { name: 'admin-comments', label: 'Comentarios', icon: 'comments' },
@@ -23,6 +24,7 @@ const menuItems = [
   { name: 'admin-users', label: 'Usuarios', icon: 'users' },
   { name: 'admin-payments', label: 'Pagos manuales', icon: 'money-bill' },
   { name: 'admin-card-payments', label: 'Pagos con tarjeta', icon: 'credit-card' },
+  { name: 'admin-backoffice', label: 'Backoffice', icon: 'briefcase' },
 ]
 
 function isActive(name: string): boolean {
@@ -84,6 +86,7 @@ function logout() {
                 'fa-comments': item.icon === 'comments',
                 'fa-film': item.icon === 'film',
                 'fa-weight-scale': item.icon === 'weight-scale',
+                'fa-briefcase': item.icon === 'briefcase',
               }"
             />
           </span>

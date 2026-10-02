@@ -429,6 +429,10 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Admin - Cursos | Luisa Pita Bejarano' },
       },
       {
+        path: 'contenido/horario', name: 'admin-weekly-schedule', component: () => import('@/views/admin/AdminWeeklyScheduleView.vue'),
+        meta: { title: 'Admin - Horario semanal | Luisa Pita Bejarano' },
+      },
+      {
         path: 'contenido/calendario', name: 'admin-calendar', component: () => import('@/views/admin/AdminEntityView.vue'),
         props: { kind: 'calendar', title: 'Calendario', assetField: 'cover', assetCategory: 'calendar', fields: [{ key: 'title', label: 'Título', required: true }, { key: 'description', label: 'Descripción', type: 'textarea' }, { key: 'startsAt', label: 'Inicio', type: 'datetime-local', required: true }, { key: 'endsAt', label: 'Fin', type: 'datetime-local' }, { key: 'timezone', label: 'Zona horaria', required: true }, { key: 'meetingUrl', label: 'Enlace Meet' }, { key: 'status', label: 'Estado', type: 'select', required: true, options: [{ value: 'draft', label: 'Borrador' }, { value: 'published', label: 'Publicado' }, { value: 'archived', label: 'Archivado' }] }] },
         meta: { title: 'Admin - Calendario | Luisa Pita Bejarano' },
@@ -452,6 +456,12 @@ const routes: RouteRecordRaw[] = [
         name: 'admin-recorded-classes',
         component: () => import('@/views/admin/AdminRecordedClassesView.vue'),
         meta: { title: 'Admin - Clases grabadas | Luisa Pita Bejarano' },
+      },
+      {
+        path: 'backoffice',
+        name: 'admin-backoffice',
+        component: () => import('@/views/admin/AdminBackofficeView.vue'),
+        meta: { title: 'Admin - Backoffice | Luisa Pita Bejarano' },
       },
       {
         path: 'valoraciones',

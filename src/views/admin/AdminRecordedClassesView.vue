@@ -203,7 +203,8 @@ onMounted(fetchClasses)
         <span class="rc-admin__eyebrow">Contenido</span>
         <h1 class="rc-admin__title">Clases grabadas</h1>
         <p class="rc-admin__subtitle">
-          Sube el enlace de la grabación de cada clase en vivo para que las miembros puedan revisarla cuando quieran.
+          Las clases de Zoom se publican solas al terminar la grabación y se avisa por correo a las alumnas.
+          Aquí puedes revisarlas o subir una a mano si hace falta.
         </p>
       </div>
       <button class="rc-admin__btn rc-admin__btn--primary" @click="openCreate">
@@ -400,7 +401,12 @@ onMounted(fetchClasses)
           </thead>
           <tbody>
             <tr v-for="cls in classes" :key="cls._id">
-              <td class="rc-table__title">{{ cls.title }}</td>
+              <td class="rc-table__title">
+                {{ cls.title }}
+                <span v-if="cls.source === 'zoom'" class="rc-table__auto" title="Publicada sola al terminar la grabación en Zoom">
+                  <i class="fa-solid fa-bolt" /> Automática (Zoom)
+                </span>
+              </td>
               <td class="rc-table__date">{{ formatDate(cls.classDate) }}</td>
               <td class="rc-table__time">{{ cls.startsAt }} – {{ cls.endsAt }}</td>
               <td>
@@ -468,6 +474,19 @@ onMounted(fetchClasses)
 </template>
 
 <style lang="scss" scoped>
+.rc-table__auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba($lpb-green, 0.14);
+  color: $lpb-green-deep;
+  font: 600 0.7rem $font-sans;
+  white-space: nowrap;
+}
+
 .rc-form__notify {
   display: flex;
   align-items: flex-start;
