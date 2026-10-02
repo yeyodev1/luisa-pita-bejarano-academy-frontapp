@@ -189,6 +189,8 @@ export interface RecordedClass {
   status?: ContentStatus
   /** Cuándo se avisó por correo a las alumnas; null = todavía no. */
   announcedAt?: string | null
+  /** 'zoom' = la publicó sola el webhook de grabación de Zoom. */
+  source?: 'manual' | 'zoom'
   createdAt?: string
   updatedAt?: string
 }
