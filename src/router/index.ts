@@ -454,6 +454,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'Admin - Clases grabadas | Luisa Pita Bejarano' },
       },
       {
+        path: 'backoffice',
+        name: 'admin-backoffice',
+        component: () => import('@/views/admin/AdminBackofficeView.vue'),
+        meta: { title: 'Admin - Backoffice | Luisa Pita Bejarano' },
+      },
+      {
         path: 'valoraciones',
         name: 'admin-assessments',
         component: () => import('@/views/admin/AdminAssessmentsListView.vue'),

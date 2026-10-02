@@ -23,6 +23,7 @@ const menuItems = [
   { name: 'admin-users', label: 'Usuarios', icon: 'users' },
   { name: 'admin-payments', label: 'Pagos manuales', icon: 'money-bill' },
   { name: 'admin-card-payments', label: 'Pagos con tarjeta', icon: 'credit-card' },
+  { name: 'admin-backoffice', label: 'Backoffice', icon: 'briefcase' },
 ]
 
 function isActive(name: string): boolean {
@@ -84,6 +85,7 @@ function logout() {
                 'fa-comments': item.icon === 'comments',
                 'fa-film': item.icon === 'film',
                 'fa-weight-scale': item.icon === 'weight-scale',
+                'fa-briefcase': item.icon === 'briefcase',
               }"
             />
           </span>
