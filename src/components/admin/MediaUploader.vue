@@ -1,13 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Upload } from 'tus-js-client'
 import { adminContentService } from '@/services/adminContentService'
 import type { AssetCategory } from '@/services/adminContentService'
 import type { MediaAsset, ResourceType } from '@/types'
 
 const props = withDefaults(defineProps<{ resourceType: ResourceType; category: AssetCategory; label?: string }>(), { label: 'Subir archivo' })
-const emit = defineEmits<{ uploaded: [asset: MediaAsset] }>()
+const emit = defineEmits<{ uploaded: [asset: MediaAsset]; busy: [value: boolean] }>()
 const busy = ref(false)
+// Avisa al padre si hay una subida en curso (para no guardar ni cerrar a medias).
+watch(busy, (value) => emit('busy', value))
+
+/** Fallos seguidos al consultar el estado antes de rendirse (cortes de red). */
+const MAX_POLL_FAILURES = 6
+
+function friendlyError(err: unknown, fallback: string) {
+  const message = (err as { message?: string })?.message
+  if (!message || message === 'Unknown error') return 'No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.'
+  return message || fallback
+}
 const error = ref('')
 const progress = ref(0)
 const processing = ref(false)
@@ -55,14 +66,23 @@ async function uploadVideo(file: File) {
     })
     processing.value = true
     const deadline = Date.now() + 30 * 60 * 1000
+    let failures = 0
     while (Date.now() < deadline) {
-      const video = (await adminContentService.getVideoStatus(videoId)).data.data
-      progress.value = video.encodeProgress
-      if (video.status === 4 || video.status === 8) break
-      if (video.status === 5 || video.status === 6) throw new Error('Bunny no pudo procesar el video.')
-      await new Promise((resolve) => window.setTimeout(resolve, 5000))
+      try {
+        const video = (await adminContentService.getVideoStatus(videoId)).data.data
+        failures = 0
+        progress.value = video.encodeProgress
+        if (video.status === 4 || video.status === 8) break
+        if (video.status === 5 || video.status === 6) throw new Error('No se pudo procesar el video. Revisa que el archivo no esté dañado e intenta con otro.')
+      } catch (pollError) {
+        // Un corte momentáneo no debe borrar un video ya subido: se reintenta.
+        if (pollError instanceof Error && pollError.message.startsWith('No se pudo procesar')) throw pollError
+        failures += 1
+        if (failures >= MAX_POLL_FAILURES) throw new Error('Perdimos la conexión mientras se procesaba el video. Revisa tu internet e intenta de nuevo.')
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 5000 * Math.min(failures + 1, 4)))
     }
-    if (Date.now() >= deadline) throw new Error('Bunny continúa procesando el video. Intenta nuevamente más tarde.')
+    if (Date.now() >= deadline) throw new Error('El video sigue procesándose después de 30 minutos. Intenta de nuevo más tarde.')
     const confirmed = await adminContentService.confirmVideoUpload(videoId, {
       bytes: file.size,
       duration,
@@ -70,7 +90,7 @@ async function uploadVideo(file: File) {
     })
     emit('uploaded', confirmed.data.data.asset)
   } catch (uploadError) {
-    error.value = (uploadError as { message?: string }).message || 'La carga no pudo completarse.'
+    error.value = friendlyError(uploadError, 'La carga no pudo completarse.')
     if (videoId) await adminContentService.deleteMedia(videoId, 'video', 'bunny').catch(() => undefined)
   } finally {
     busy.value = false
@@ -82,7 +102,7 @@ async function uploadVideo(file: File) {
 async function openWidget() {
   if (props.resourceType === 'video') { fileInput.value?.click(); return }
   const cloudinary = window.cloudinary
-  if (!cloudinary?.createUploadWidget) { error.value = 'No se pudo cargar el widget de Cloudinary.'; return }
+  if (!cloudinary?.createUploadWidget) { error.value = 'No se pudo abrir el cargador de archivos. Desactiva el bloqueador de anuncios o recarga la página.'; return }
   busy.value = true
   error.value = ''
   try {
@@ -101,12 +121,12 @@ async function openWidget() {
         emit('uploaded', confirmed.data.data.asset)
         widget.close()
       } catch (confirmError) {
-        error.value = (confirmError as { message?: string }).message || 'No se pudo verificar el archivo.'
+        error.value = friendlyError(confirmError, 'No se pudo verificar el archivo.')
       } finally { busy.value = false }
     })
     widget.open()
   } catch (uploadError) {
-    error.value = (uploadError as { message?: string }).message || 'No se pudo iniciar la carga.'
+    error.value = friendlyError(uploadError, 'No se pudo iniciar la carga.')
     busy.value = false
   }
 }
@@ -124,7 +144,11 @@ function selectVideo(event: Event) {
       {{ busy ? (resourceType === 'video' ? `${processing ? 'Procesando' : 'Subiendo'} ${progress}%` : 'Preparando...') : label }}
     </button>
     <progress v-if="busy && resourceType === 'video'" :value="progress" max="100" />
-    <small v-if="error">{{ error }}</small>
+    <p v-if="busy && resourceType === 'video'" class="media-upload__note">
+      <i class="fa-solid fa-circle-info" /> {{ processing ? 'Procesando el video: puede tardar varios minutos.' : 'Subiendo el video.' }}
+      No cierres esta ventana.
+    </p>
+    <p v-if="error" class="media-upload__error" role="alert"><i class="fa-solid fa-triangle-exclamation" /> {{ error }}</p>
   </div>
 </template>
 
@@ -133,5 +157,7 @@ function selectVideo(event: Event) {
 button { border: 1px solid var(--border); border-radius: 999px; padding: .65rem 1rem; background: $lpb-white; color: $lpb-black; font: 600 .7rem $font-mono; text-transform: uppercase; cursor: pointer; }
 button:disabled { opacity: .5; }
 progress { width: min(12rem, 100%); accent-color: $lpb-green; }
-small { color: $alert-error; font-family: $font-sans; }
+.media-upload__note, .media-upload__error { flex-basis: 100%; margin: 0; font: 0.75rem/1.45 $font-sans; }
+.media-upload__note { color: $lpb-graphite; }
+.media-upload__error { padding: 0.55rem 0.75rem; border-radius: 0.6rem; background: rgba($alert-error, 0.08); color: $alert-error; }
 </style>

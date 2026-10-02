@@ -36,6 +36,14 @@
   .media-field small { font: 0.65rem $font-sans; color: $lpb-muted; }
   .text-button { font: 700 0.62rem $font-mono; text-transform: uppercase; cursor: pointer; }
   .danger { color: $alert-error !important; }
+  .editor-error {
+    display: flex; gap: 0.5rem; align-items: flex-start; margin: 0; padding: 0.75rem 1rem;
+    border-radius: 0.7rem; background: rgba($alert-error, 0.08); color: $alert-error;
+    font: 0.8rem/1.45 $font-sans;
+  }
+  .editor-footer__hint { flex: 1; align-self: center; font: 0.72rem/1.4 $font-sans; color: $lpb-muted; }
+  .editor-footer__error { flex-basis: 100%; }
+  .editor-footer { flex-wrap: wrap; }
   .editor-footer { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 0.6rem; padding: 1rem 1.75rem; background: $lpb-white; border-top: 1px solid var(--border); }
   @media (max-width: 760px) {
     .form-section, .editor-footer { padding-left: 1rem; padding-right: 1rem; }

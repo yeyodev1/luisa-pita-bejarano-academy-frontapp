@@ -29,6 +29,9 @@ const manager = useAdminCourses();
     />
 
     <p v-if="manager.error.value" class="alert" role="alert">{{ manager.error.value }}</p>
+    <p v-if="manager.success.value" class="alert alert--success" role="status">
+      <i class="fa-solid fa-circle-check" aria-hidden="true" /> {{ manager.success.value }}
+    </p>
     <ApiState v-if="manager.loading.value && !manager.courses.value.length" loading />
 
     <section v-else-if="!manager.courses.value.length" class="empty-state">
@@ -39,8 +42,8 @@ const manager = useAdminCourses();
       <span class="eyebrow">Tu biblioteca está vacía</span>
       <h3>Crea un espacio que guíe, no que abrume</h3>
       <p>
-        Comienza con el nombre y la promesa del curso. Después podrás añadir
-        videos, materiales descargables y publicar cada clase a tu ritmo.
+        Comienza con el nombre del curso. Después añade las clases con su video
+        y pulsa «Publicar» en el curso y en cada clase para que las alumnas los vean.
       </p>
       <button class="button button--primary" type="button" @click="manager.openCourseEditor()">
         Crear mi primer curso
@@ -56,6 +59,7 @@ const manager = useAdminCourses();
       @edit="manager.openCourseEditor"
       @remove="manager.deleteCourse"
       @move="manager.moveCourse"
+      @toggle-publish="manager.toggleCoursePublish"
       @refresh="manager.loadCourses()"
     >
       <AdminLessonPanel
@@ -67,6 +71,8 @@ const manager = useAdminCourses();
         @edit-lesson="manager.openLessonEditor"
         @remove-lesson="manager.deleteLesson"
         @move-lesson="manager.moveLesson"
+        @toggle-course-publish="manager.toggleCoursePublish"
+        @toggle-lesson-publish="manager.toggleLessonPublish"
       />
     </AdminCourseLibrary>
 
@@ -76,6 +82,7 @@ const manager = useAdminCourses();
       :initial-value="manager.courseDraft.value"
       :editing="Boolean(manager.editingCourse.value)"
       :saving="manager.saving.value"
+      :error="manager.editorError.value"
       :remove-asset="manager.removeAsset"
       @close="manager.closeEditor"
       @save="manager.saveCourse"
@@ -87,7 +94,9 @@ const manager = useAdminCourses();
       :editing="Boolean(manager.editingLesson.value)"
       :saving="manager.saving.value"
       :course-title="manager.selected.value.title"
+      :error="manager.editorError.value"
       :remove-asset="manager.removeAsset"
+      @uploading="manager.uploading.value = $event"
       @close="manager.closeEditor"
       @save="manager.saveLesson"
     />
@@ -124,6 +133,11 @@ const manager = useAdminCourses();
   background: rgba($alert-error, 0.06);
   color: $alert-error;
   font: 0.82rem $font-sans;
+}
+.alert--success {
+  border-color: rgba($lpb-green-deep, 0.25);
+  background: rgba($lpb-green, 0.1);
+  color: $lpb-green-deep;
 }
 .empty-state {
   min-height: 440px;

@@ -9,6 +9,7 @@ const props = defineProps<{
   initialValue: CourseDraft;
   editing: boolean;
   saving: boolean;
+  error?: string;
   removeAsset: (asset: MediaAsset | null | undefined) => Promise<void>;
 }>();
 const emit = defineEmits<{ close: []; save: [draft: CourseDraft] }>();
@@ -51,16 +52,13 @@ async function removeCover() {
             <textarea v-model="form.description" rows="5" placeholder="¿Para quién es y qué aprenderá?" />
           </label>
           <label class="field">
-            <span>Estado</span>
+            <span>¿Lo ven las alumnas?</span>
             <select v-model="form.status">
-              <option value="draft">Borrador</option>
-              <option value="published">Publicado</option>
-              <option value="archived">Archivado</option>
+              <option value="draft">No todavía (borrador)</option>
+              <option value="published">Sí, publicado</option>
+              <option value="archived">Archivado (oculto, se conserva)</option>
             </select>
-          </label>
-          <label class="field">
-            <span>URL amigable</span>
-            <input v-model="form.slug" placeholder="Se genera automáticamente" />
+            <small>Las clases también deben estar publicadas para que se vean.</small>
           </label>
         </div>
       </section>
@@ -74,7 +72,8 @@ async function removeCover() {
         </div>
         <div class="media-field" :class="{ 'media-field--ready': form.cover }">
           <div class="media-field__info">
-            <i class="fa-solid fa-image" aria-hidden="true" />
+            <img v-if="form.cover?.deliveryUrl" :src="form.cover.deliveryUrl" alt="Portada del curso" class="cover-preview" />
+            <i v-else class="fa-solid fa-image" aria-hidden="true" />
             <span>
               <strong>{{ form.cover ? "Portada lista" : "Añade una imagen de portada" }}</strong>
               <small>{{ form.cover?.originalFilename || "JPG, PNG o WebP" }}</small>
@@ -92,6 +91,9 @@ async function removeCover() {
         </div>
       </section>
       <footer class="editor-footer">
+        <p v-if="error" class="editor-error editor-footer__error" role="alert">
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {{ error }}
+        </p>
         <button class="button button--quiet" type="button" @click="emit('close')">Cancelar</button>
         <button class="button button--primary" type="submit" :disabled="saving">
           {{ saving ? "Guardando..." : "Guardar curso" }}
@@ -106,4 +108,6 @@ async function removeCover() {
 @use "./editor" as editor;
 @include shared.button;
 @include editor.form;
+
+.cover-preview { width: 96px; height: 54px; flex: 0 0 auto; border-radius: 0.5rem; object-fit: cover; }
 </style>

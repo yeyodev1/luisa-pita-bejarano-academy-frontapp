@@ -10,6 +10,8 @@ const emit = defineEmits<{
   editLesson: [lesson: Lesson];
   removeLesson: [lesson: Lesson];
   moveLesson: [index: number, direction: number];
+  toggleCoursePublish: [course: Course];
+  toggleLessonPublish: [lesson: Lesson];
 }>();
 </script>
 
@@ -25,6 +27,10 @@ const emit = defineEmits<{
           <p>{{ lessons.length }} {{ lessons.length === 1 ? "clase" : "clases" }} en este curso</p>
         </div>
         <div class="lesson-panel__actions">
+          <button class="button button--quiet" type="button" @click="emit('toggleCoursePublish', selected)">
+            <i class="fa-solid" :class="selected.status === 'published' ? 'fa-eye-slash' : 'fa-paper-plane'" aria-hidden="true" />
+            {{ selected.status === "published" ? "Ocultar curso" : "Publicar curso" }}
+          </button>
           <button class="button button--quiet" type="button" @click="emit('editCourse', selected)">
             Editar curso
           </button>
@@ -39,8 +45,8 @@ const emit = defineEmits<{
         <span><i class="fa-solid fa-circle-play" aria-hidden="true" /></span>
         <h4>Ahora agrega la primera clase</h4>
         <p>
-          Sube el video, añade una descripción y guarda en borrador. Podrás
-          publicarla cuando esté revisada.
+          Sube el video y guarda. La clase queda oculta hasta que pulses
+          «Publicar» en su fila; el curso también debe estar publicado.
         </p>
         <button class="button button--primary" type="button" @click="emit('createLesson')">
           Crear primera clase
@@ -60,6 +66,16 @@ const emit = defineEmits<{
             </span>
           </div>
           <div class="lesson-row__actions">
+            <button
+              class="publish-toggle"
+              :class="{ 'publish-toggle--on': lesson.status === 'published' }"
+              type="button"
+              :aria-label="lesson.status === 'published' ? 'Ocultar clase' : 'Publicar clase'"
+              @click="emit('toggleLessonPublish', lesson)"
+            >
+              <i class="fa-solid" :class="lesson.status === 'published' ? 'fa-eye-slash' : 'fa-paper-plane'" aria-hidden="true" />
+              {{ lesson.status === "published" ? "Ocultar" : "Publicar" }}
+            </button>
             <button type="button" :disabled="index === 0" aria-label="Subir clase" @click="emit('moveLesson', index, -1)">
               <i class="fa-solid fa-arrow-up" />
             </button>
@@ -127,6 +143,11 @@ const emit = defineEmits<{
 .lesson-row__actions button:hover { background: $lpb-cream; color: $lpb-black; }
 .lesson-row__actions button:disabled { opacity: 0.25; cursor: not-allowed; }
 .danger { color: $alert-error !important; }
+.lesson-row__actions .publish-toggle {
+  width: auto; padding: 0 0.7rem; gap: 0.35rem; border-radius: 999px;
+  background: rgba($lpb-green, 0.15); color: $lpb-green-deep; font: 600 0.68rem $font-sans;
+}
+.lesson-row__actions .publish-toggle--on { background: $lpb-cream; color: $lpb-graphite; }
 @media (max-width: 1100px) {
   .lesson-panel__header { align-items: flex-start; flex-direction: column; }
   .lesson-panel__actions { width: 100%; }

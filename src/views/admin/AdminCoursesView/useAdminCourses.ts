@@ -9,8 +9,13 @@ import { adminContentService } from "@/services/adminContentService";
 import type { ContentStatus, Course, Lesson, MediaAsset } from "@/types";
 import type { CourseDraft, Editor, LessonDraft } from "./types";
 
+const OFFLINE_MESSAGE =
+  "No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.";
+
 function messageFrom(error: unknown, fallback: string) {
-  return (error as { message?: string }).message || fallback;
+  const message = (error as { message?: string })?.message;
+  if (message === "Unknown error") return OFFLINE_MESSAGE;
+  return message || fallback;
 }
 
 export function statusLabel(status?: ContentStatus) {
@@ -18,7 +23,7 @@ export function statusLabel(status?: ContentStatus) {
     ? "Publicado"
     : status === "archived"
       ? "Archivado"
-      : "Borrador";
+      : "Borrador (oculto)";
 }
 
 export function formatDuration(seconds = 0) {
@@ -36,6 +41,11 @@ export function useAdminCourses() {
   const lessonsLoading = ref(false);
   const saving = ref(false);
   const error = ref("");
+  /** Error al guardar: se muestra dentro del editor, que queda abierto. */
+  const editorError = ref("");
+  const success = ref("");
+  /** Hay un archivo subiéndose en el editor de clase. */
+  const uploading = ref(false);
   const editor = ref<Editor>(null);
   const editingCourse = ref("");
   const editingLesson = ref("");
@@ -117,7 +127,15 @@ export function useAdminCourses() {
     }
   }
 
+  function flash(message: string) {
+    success.value = message;
+    window.setTimeout(() => {
+      if (success.value === message) success.value = "";
+    }, 4000);
+  }
+
   function openCourseEditor(course?: Course) {
+    editorError.value = "";
     editingCourse.value = course?._id || "";
     originalCourseCover.value = course?.cover;
     courseDraft.value = course
@@ -144,6 +162,8 @@ export function useAdminCourses() {
 
   function openLessonEditor(lesson?: Lesson) {
     if (!selected.value) return;
+    editorError.value = "";
+    uploading.value = false;
     editingLesson.value = lesson?._id || "";
     originalLessonAssets.value = lesson
       ? ([lesson.video, lesson.thumbnail, ...(lesson.materials || [])].filter(
@@ -179,12 +199,15 @@ export function useAdminCourses() {
   }
 
   function closeEditor() {
-    if (!saving.value) editor.value = null;
+    if (!saving.value) {
+      editor.value = null;
+      uploading.value = false;
+    }
   }
 
   async function saveCourse(draft: CourseDraft) {
     saving.value = true;
-    error.value = "";
+    editorError.value = "";
     try {
       const payload: Record<string, unknown> = { ...draft };
       if (!payload.slug) delete payload.slug;
@@ -208,9 +231,14 @@ export function useAdminCourses() {
           .catch(() => undefined);
       }
       editor.value = null;
+      flash(
+        draft.status === "published"
+          ? "Curso guardado y publicado."
+          : "Curso guardado. Sigue oculto para las alumnas hasta que lo publiques.",
+      );
       await loadCourses(response.data.data._id);
     } catch (saveError) {
-      error.value = messageFrom(saveError, "No se pudo guardar el curso.");
+      editorError.value = messageFrom(saveError, "No se pudo guardar el curso.");
     } finally {
       saving.value = false;
     }
@@ -219,7 +247,7 @@ export function useAdminCourses() {
   async function saveLesson(draft: LessonDraft) {
     if (!selected.value) return;
     saving.value = true;
-    error.value = "";
+    editorError.value = "";
     try {
       const payload: Record<string, unknown> = {
         ...draft,
@@ -242,9 +270,14 @@ export function useAdminCourses() {
           ),
       );
       editor.value = null;
+      flash(
+        draft.status === "published"
+          ? "Clase guardada y publicada."
+          : "Clase guardada. Sigue oculta para las alumnas hasta que la publiques.",
+      );
       await choose(selected.value);
     } catch (saveError) {
-      error.value = messageFrom(saveError, "No se pudo guardar la clase.");
+      editorError.value = messageFrom(saveError, "No se pudo guardar la clase.");
     } finally {
       saving.value = false;
     }
@@ -257,15 +290,27 @@ export function useAdminCourses() {
       )
     )
       return;
-    await adminContentService.remove("courses", course._id);
-    if (selected.value?._id === course._id) selected.value = null;
-    await loadCourses();
+    error.value = "";
+    try {
+      await adminContentService.remove("courses", course._id);
+      if (selected.value?._id === course._id) selected.value = null;
+      flash("Curso eliminado.");
+      await loadCourses();
+    } catch (removeError) {
+      error.value = messageFrom(removeError, "No se pudo eliminar el curso.");
+    }
   }
 
   async function deleteLesson(lesson: Lesson) {
     if (!confirm(`¿Eliminar la clase “${lesson.title}” y su progreso?`)) return;
-    await adminContentService.removeLesson(lesson._id);
-    if (selected.value) await choose(selected.value);
+    error.value = "";
+    try {
+      await adminContentService.removeLesson(lesson._id);
+      flash("Clase eliminada.");
+      if (selected.value) await choose(selected.value);
+    } catch (removeError) {
+      error.value = messageFrom(removeError, "No se pudo eliminar la clase.");
+    }
   }
 
   async function moveLesson(index: number, direction: number) {
@@ -276,10 +321,15 @@ export function useAdminCourses() {
       lessons.value[target]!,
       lessons.value[index]!,
     ];
-    await adminContentService.reorderLessons(
-      selected.value._id,
-      lessons.value.map((item) => item._id),
-    );
+    try {
+      await adminContentService.reorderLessons(
+        selected.value._id,
+        lessons.value.map((item) => item._id),
+      );
+    } catch (moveError) {
+      error.value = messageFrom(moveError, "No se pudo cambiar el orden de las clases.");
+      await choose(selected.value);
+    }
   }
 
   async function moveCourse(index: number, direction: number) {
@@ -289,9 +339,58 @@ export function useAdminCourses() {
       courses.value[target]!,
       courses.value[index]!,
     ];
-    await adminContentService.reorderCourses(
-      courses.value.map((item) => item._id),
-    );
+    try {
+      await adminContentService.reorderCourses(
+        courses.value.map((item) => item._id),
+      );
+    } catch (moveError) {
+      error.value = messageFrom(moveError, "No se pudo cambiar el orden de los cursos.");
+      await loadCourses();
+    }
+  }
+
+  /** Publicar u ocultar con un clic (sin abrir el editor). */
+  async function toggleCoursePublish(course: Course) {
+    const publish = course.status !== "published";
+    if (!publish && !confirm(`¿Ocultar “${course.title}”? Las alumnas dejarán de verlo.`)) return;
+    error.value = "";
+    try {
+      await adminContentService.update<Course>("courses", course._id, {
+        status: publish ? "published" : "draft",
+      });
+      const hidden = publish ? lessons.value.filter((l) => l.status !== "published").length : 0;
+      flash(
+        publish
+          ? hidden && selected.value?._id === course._id
+            ? `Curso publicado. Ojo: ${hidden} ${hidden === 1 ? "clase sigue oculta" : "clases siguen ocultas"}; publícalas para que las alumnas las vean.`
+            : "Curso publicado: ya lo ven las alumnas."
+          : "Curso oculto para las alumnas.",
+      );
+      await loadCourses(course._id);
+    } catch (toggleError) {
+      error.value = messageFrom(toggleError, "No se pudo cambiar el estado del curso.");
+    }
+  }
+
+  async function toggleLessonPublish(lesson: Lesson) {
+    if (!selected.value) return;
+    const publish = lesson.status !== "published";
+    error.value = "";
+    try {
+      await adminContentService.updateLesson(lesson._id, {
+        status: publish ? "published" : "draft",
+      });
+      flash(
+        publish
+          ? selected.value.status === "published"
+            ? "Clase publicada: ya la ven las alumnas."
+            : "Clase publicada. Publica también el curso para que las alumnas la vean."
+          : "Clase oculta para las alumnas.",
+      );
+      await choose(selected.value);
+    } catch (toggleError) {
+      error.value = messageFrom(toggleError, "No se pudo cambiar el estado de la clase.");
+    }
   }
 
   async function removeAsset(asset: MediaAsset | null | undefined) {
@@ -306,7 +405,13 @@ export function useAdminCourses() {
   }
 
   function handleEscape(event: KeyboardEvent) {
-    if (event.key === "Escape" && editor.value) closeEditor();
+    if (event.key !== "Escape" || !editor.value) return;
+    if (
+      uploading.value &&
+      !confirm("Hay un archivo subiéndose. Si cierras ahora se cancelará. ¿Cerrar de todos modos?")
+    )
+      return;
+    closeEditor();
   }
 
   watch(editor, (value) => {
@@ -329,6 +434,9 @@ export function useAdminCourses() {
     lessonsLoading,
     saving,
     error,
+    editorError,
+    success,
+    uploading,
     editor,
     editingCourse,
     editingLesson,
@@ -349,6 +457,8 @@ export function useAdminCourses() {
     deleteLesson,
     moveCourse,
     moveLesson,
+    toggleCoursePublish,
+    toggleLessonPublish,
     removeAsset,
   };
 }
