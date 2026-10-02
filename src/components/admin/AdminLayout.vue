@@ -15,7 +15,8 @@ const showLogoutConfirm = ref(false)
 const menuItems = [
   { name: 'admin-courses', label: 'Cursos y clases', icon: 'book' },
   { name: 'admin-recorded-classes', label: 'Clases grabadas', icon: 'film' },
-  { name: 'admin-calendar', label: 'Calendario', icon: 'calendar' },
+  { name: 'admin-weekly-schedule', label: 'Horario semanal', icon: 'clock' },
+  { name: 'admin-calendar', label: 'Eventos especiales', icon: 'calendar' },
   { name: 'admin-recipes', label: 'Recetas', icon: 'utensils' },
   { name: 'admin-achievements', label: 'Logros', icon: 'trophy' },
   { name: 'admin-comments', label: 'Comentarios', icon: 'comments' },

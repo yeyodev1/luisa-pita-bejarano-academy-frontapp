@@ -1,5 +1,5 @@
 import APIBase from './httpBase'
-import type { ApiResponse, MediaAsset, Pagination, RecordedClass, ResourceType } from '@/types'
+import type { ApiResponse, MediaAsset, Pagination, RecordedClass, ResourceType, WeeklySession } from '@/types'
 import type { CheckpointPayload, PhysicalAssessment, ProfilePayload } from '@/types/assessment'
 
 export type ContentKind = 'courses' | 'calendar' | 'recipes' | 'achievements' | 'comments'
@@ -87,6 +87,22 @@ class AdminContentService extends APIBase {
 
   reorderLessons(courseId: string, lessonIds: string[]) {
     return this.put<ApiResponse<unknown[]>>(`admin/courses/${courseId}/lessons/reorder`, { lessonIds })
+  }
+
+  listWeeklySchedule() {
+    return this.get<ApiResponse<WeeklySession[]>>('admin/weekly-schedule')
+  }
+
+  createWeeklySession(payload: Partial<WeeklySession>) {
+    return this.post<ApiResponse<WeeklySession>>('admin/weekly-schedule', payload)
+  }
+
+  updateWeeklySession(id: string, payload: Partial<WeeklySession>) {
+    return this.put<ApiResponse<WeeklySession>>(`admin/weekly-schedule/${id}`, payload)
+  }
+
+  deleteWeeklySession(id: string) {
+    return this.delete<ApiResponse<{ deleted: boolean }>>(`admin/weekly-schedule/${id}`)
   }
 
   getCalendarConfig() {

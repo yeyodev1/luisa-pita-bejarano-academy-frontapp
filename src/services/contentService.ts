@@ -12,6 +12,7 @@ import type {
   ProgressUpdateResponse,
   Recipe,
   RecordedClass,
+  WeeklySession,
 } from '@/types'
 import type { CheckpointPayload, PhysicalAssessment, ProfilePayload } from '@/types/assessment'
 
@@ -32,6 +33,10 @@ class ContentService extends APIBase {
 
   updateProgress(id: string, payload: { watchedSeconds: number; lastPositionSeconds: number; percent: number; completed?: boolean }) {
     return this.put<ApiResponse<ProgressUpdateResponse>>(`${ROOT}/lessons/${id}/progress`, payload)
+  }
+
+  getWeeklySchedule() {
+    return this.get<ApiResponse<WeeklySession[]>>(`${ROOT}/weekly-schedule`)
   }
 
   getCalendarEvents() {
